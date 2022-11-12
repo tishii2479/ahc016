@@ -27,7 +27,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, iter_count: usize) -> State {
     let mut state = State::new(graphs);
 
     // 焼きなまし
-    for iter in 0..iter_count {
+    for _ in 0..iter_count {
         let current_score = state.score;
 
         // 辺を付け替える

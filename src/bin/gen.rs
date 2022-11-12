@@ -8,7 +8,7 @@ fn main() {
 
     input! {
         m: usize,
-        eps: f64
+        _: f64
     }
 
     for n in N_RANGE {

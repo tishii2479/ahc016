@@ -1,4 +1,5 @@
 use std::io;
+use std::io::Write;
 
 use ahc016::gen_graph::*;
 use ahc016::graph::*;
@@ -21,14 +22,21 @@ fn read_graph_input(stdin: &io::Stdin) -> String {
 
 fn main() {
     const QUERY_COUNT: usize = 100;
+    const ITER_COUNT: usize = 200;
+
     let stdin = io::stdin();
+    let stdout = io::stdout();
+
     let (m, eps) = read_input(&stdin);
 
     // M, epsに対応するグラフを出力する
-    const ITER_COUNT: usize = 100;
-    let n = m;
+    let n = if eps == 0. { 10 } else { m };
+
     let state = create_optimal_graphs(n, m, ITER_COUNT);
+
     println!("{}", n);
+    stdout.lock().flush().unwrap();
+
     state.output();
 
     // 各クエリを処理する
@@ -47,7 +55,7 @@ fn main() {
                 min_graph_index = i;
             }
         }
-
         println!("{}", min_graph_index);
+        stdout.lock().flush().unwrap();
     }
 }
