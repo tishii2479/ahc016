@@ -38,7 +38,10 @@ impl Graph {
     }
 
     pub fn to_raw_format(&self) -> String {
-        todo!();
+        self.edges
+            .iter()
+            .map(|&e| if e { "1" } else { "0" })
+            .collect()
     }
 
     pub fn has_edge(&self, edge_index: usize) -> bool {

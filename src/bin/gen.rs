@@ -1,7 +1,7 @@
 use std::ops::RangeInclusive;
 
 use ahc016::{
-    graph::{self, calc_graph_similarity, Graph},
+    graph::{calc_graph_similarity, Graph},
     util::rnd,
 };
 use proconio::input;
@@ -27,7 +27,7 @@ fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
 fn create_optimal_graphs(n: usize, m: usize, iter_count: usize) -> State {
     // M個のグラフを初期化する
     let graphs = create_initial_graphs(n, m);
-    let mut state = State::new(graphs);
+    let mut state = State::new(n, graphs);
 
     // 焼きなまし
     for iter in 0..iter_count {
@@ -70,13 +70,18 @@ fn create_optimal_graphs(n: usize, m: usize, iter_count: usize) -> State {
 
 #[derive(Debug)]
 struct State {
+    n: usize,
     score: i64,
     graphs: Vec<Graph>,
 }
 
 impl State {
-    fn new(graphs: Vec<Graph>) -> State {
-        let mut state = State { score: 0, graphs };
+    fn new(n: usize, graphs: Vec<Graph>) -> State {
+        let mut state = State {
+            n,
+            score: 0,
+            graphs,
+        };
         state.score = state.calc_score();
         state
     }
@@ -102,6 +107,13 @@ impl State {
         }
         score
     }
+
+    fn output(&self) {
+        println!("{}", self.n);
+        for graph in &self.graphs {
+            println!("{}", graph.to_raw_format());
+        }
+    }
 }
 
 fn main() {
@@ -116,6 +128,6 @@ fn main() {
     for n in N_RANGE {
         // グラフを作成して出力する
         let state = create_optimal_graphs(n, m, ITER_COUNT);
-        eprintln!("{:?}", state);
+        state.output();
     }
 }
