@@ -10,8 +10,7 @@ def execute_case(seed):
     output_file_path = f"tools/out/{seed:04}.txt"
 
     tester_path = "./tools/target/release/tester"
-    solver_cmd = "./target/release/ahc016"
-    solver_cmd = "python3 main.py"
+    solver_cmd = "./target/release/sol"
 
     with open(input_file_path, "r") as f:
         M, eps = f.readline().split()

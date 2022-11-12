@@ -9,7 +9,7 @@ pub struct Graph {
 impl Graph {
     pub fn from_vec_format(n: usize, vec_format: Vec<bool>) -> Graph {
         let mut degrees = vec![0; n];
-        let mut edges = vec_format;
+        let edges = vec_format;
         let mut pairs = vec![(0, 0); edges.len()];
 
         let mut it = 0;

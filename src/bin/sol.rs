@@ -2,24 +2,20 @@ use std::io;
 
 use ahc016::gen_graph::*;
 use ahc016::graph::*;
-mod gen_graph;
-mod graph;
-mod util;
 
 fn read_input(stdin: &io::Stdin) -> (usize, f64) {
     let mut user_input = String::new();
-    stdin.read_line(&mut user_input);
+    stdin.read_line(&mut user_input).unwrap();
     let mut v = vec![];
     for e in user_input.trim().split(" ") {
         v.push(e.to_string());
     }
-
     (v[0].parse().unwrap(), v[1].parse().unwrap())
 }
 
 fn read_graph_input(stdin: &io::Stdin) -> String {
     let mut user_input = String::new();
-    stdin.read_line(&mut user_input);
+    stdin.read_line(&mut user_input).unwrap();
     user_input
 }
 
