@@ -48,6 +48,7 @@ fn main() {
         let mut min_graph_index = 0;
         let mut min_dist = i64::MAX;
 
+        // 類似度を求めるのを賢くする
         for i in 0..m {
             let dist = calc_graph_similarity(&h, &state.graphs[i]);
             if dist < min_dist {
@@ -55,6 +56,7 @@ fn main() {
                 min_graph_index = i;
             }
         }
+
         println!("{}", min_graph_index);
         stdout.lock().flush().unwrap();
     }

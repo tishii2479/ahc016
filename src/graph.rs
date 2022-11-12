@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Graph {
     n: usize,
     degrees: Vec<usize>,
@@ -48,15 +48,12 @@ impl Graph {
             .collect()
     }
 
-    pub fn has_edge(&self, edge_index: usize) -> bool {
-        self.edges[edge_index]
-    }
+    pub fn set_edge(&mut self, edge_index: usize, value: bool) {
+        if self.edges[edge_index] == value {
+            return;
+        }
+        self.edges[edge_index] = value;
 
-    // 現在辺があるかどうかを返す
-    pub fn toggle_edge(&mut self, edge_index: usize) -> bool {
-        debug_assert!(edge_index < self.edges.len());
-
-        self.edges[edge_index] = !self.edges[edge_index];
         let (v, u) = self.pairs[edge_index];
         if self.edges[edge_index] {
             self.degrees[v] += 1;
@@ -65,6 +62,18 @@ impl Graph {
             self.degrees[v] -= 1;
             self.degrees[u] -= 1;
         }
+    }
+
+    pub fn has_edge(&self, edge_index: usize) -> bool {
+        self.edges[edge_index]
+    }
+
+    // 現在辺があるかどうかを返す
+    pub fn toggle_edge(&mut self, edge_index: usize) -> bool {
+        debug_assert!(edge_index < self.edges.len());
+
+        self.set_edge(edge_index, !self.edges[edge_index]);
+
         self.edges[edge_index]
     }
 }
@@ -81,9 +90,21 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
     let mut sum = 0;
 
     for i in 0..a.n {
-        let d = a_degrees[i] - b_degrees[i];
+        let d = a_degrees[i] as i64 - b_degrees[i] as i64;
         sum += d * d;
     }
 
-    return sum as i64;
+    return sum;
+}
+
+// グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
+// 山登りによって頂点の対応付けを行い、最適化された時の必要な操作回数
+pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph) -> i64 {
+    todo!();
+}
+
+// グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
+// ビームサーチによって頂点の対応付けを行い、最適化された時の必要な操作回数
+pub fn calc_graph_similarity_with_beam_search(a: &Graph, b: &Graph) -> i64 {
+    todo!();
 }
