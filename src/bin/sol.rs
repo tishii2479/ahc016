@@ -24,8 +24,7 @@ fn read_graph_input(stdin: &io::Stdin) -> String {
 fn main() {
     time::start_clock();
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_ITER_COUNT: usize = 1000000;
-    const SIMILARITY_ITER_COUNT: usize = 1000;
+    const ITER_COUNT: usize = 1000;
 
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -36,7 +35,7 @@ fn main() {
     // M, epsに対応するグラフを出力する
     let n = if eps == 0. { 10 } else { m };
 
-    let state = create_optimal_graphs(n, m, CONSTRUCT_ITER_COUNT);
+    let state = create_optimal_graphs(n, m, ITER_COUNT);
 
     println!("{}", n);
     state.output();
@@ -65,11 +64,7 @@ fn main() {
             if graph_edge_count < min_edge_count || max_edge_count < graph_edge_count {
                 continue;
             }
-            let dist = calc_graph_similarity_with_hill_climbing(
-                &h,
-                &state.graphs[i],
-                SIMILARITY_ITER_COUNT,
-            );
+            let dist = calc_graph_similarity(&h, &state.graphs[i]);
             if dist < min_dist {
                 min_dist = dist;
                 min_graph_index = i;
