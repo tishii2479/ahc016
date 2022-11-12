@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 proconio = { version = "=0.3.6", features = ["derive"] }
+fixedbitset = "=0.2.0"
+# bitset-fixed = "=0.1.0"

@@ -14,8 +14,8 @@ pub mod rnd {
 
     #[allow(unused)]
     #[inline]
-    pub fn nextf() -> f32 {
-        (next() & 4294967295) as f32 / 4294967296.
+    pub fn nextf() -> f64 {
+        (next() & 4294967295) as f64 / 4294967296.
     }
 
     #[allow(unused)]
