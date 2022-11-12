@@ -3,6 +3,7 @@ use std::io::Write;
 
 use ahc016::gen_graph::*;
 use ahc016::graph::*;
+use ahc016::util::time;
 
 fn read_input(stdin: &io::Stdin) -> (usize, f64) {
     let mut user_input = String::new();
@@ -21,8 +22,10 @@ fn read_graph_input(stdin: &io::Stdin) -> String {
 }
 
 fn main() {
+    time::start_clock();
     const QUERY_COUNT: usize = 100;
-    const ITER_COUNT: usize = 10000;
+    const CONSTRUCT_ITER_COUNT: usize = 1000000;
+    const SIMILARITY_ITER_COUNT: usize = 1000;
 
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -33,24 +36,40 @@ fn main() {
     // M, epsに対応するグラフを出力する
     let n = if eps == 0. { 10 } else { m };
 
-    let state = create_optimal_graphs(n, m, ITER_COUNT);
+    let state = create_optimal_graphs(n, m, CONSTRUCT_ITER_COUNT);
 
     println!("{}", n);
     state.output();
     flush();
 
     // 各クエリを処理する
-    for _ in 0..QUERY_COUNT {
+    for q in 0..QUERY_COUNT {
+        eprintln!("Query: {}", q);
+
         let h = read_graph_input(&stdin);
+        let h_edge_count = h.matches("1").count();
+
+        // TODO: epsの考慮
+        let min_edge_count = i64::max(0, h_edge_count as i64 - 100) as usize;
+        let max_edge_count = h_edge_count + 100;
 
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &h);
+
         let mut min_graph_index = 0;
         let mut min_dist = i64::MAX;
 
         // 類似度を求めるのを賢くする
         for i in 0..m {
-            let dist = calc_graph_similarity_with_hill_climbing(&h, &state.graphs[i]);
+            let graph_edge_count = state.graphs[i].calc_edge_count();
+            if graph_edge_count < min_edge_count || max_edge_count < graph_edge_count {
+                continue;
+            }
+            let dist = calc_graph_similarity_with_hill_climbing(
+                &h,
+                &state.graphs[i],
+                SIMILARITY_ITER_COUNT,
+            );
             if dist < min_dist {
                 min_dist = dist;
                 min_graph_index = i;
@@ -60,4 +79,6 @@ fn main() {
         println!("{}", min_graph_index);
         flush();
     }
+
+    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 }

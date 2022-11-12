@@ -4,6 +4,7 @@ use crate::util::{generate_shuffled_permutation, rnd};
 pub struct Graph {
     n: usize,
     degrees: Vec<usize>,
+    // TODO: BitSetにかえる
     edges: Vec<bool>,
     pairs: Vec<(usize, usize)>,
 }
@@ -37,6 +38,7 @@ impl Graph {
 
     pub fn from_raw_format(n: usize, raw_format: &str) -> Graph {
         let vec_format = raw_format
+            .trim()
             .chars()
             .map(|c| if c == '1' { true } else { false })
             .collect();
@@ -72,11 +74,19 @@ impl Graph {
 
     // 現在辺があるかどうかを返す
     pub fn toggle_edge(&mut self, edge_index: usize) -> bool {
-        debug_assert!(edge_index < self.edges.len());
-
         self.set_edge(edge_index, !self.edges[edge_index]);
 
         self.edges[edge_index]
+    }
+
+    pub fn calc_edge_count(&self) -> usize {
+        let mut ret = 0;
+        for e in &self.edges {
+            if *e {
+                ret += 1;
+            }
+        }
+        ret
     }
 }
 
@@ -104,19 +114,37 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
 pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph, iter_count: usize) -> i64 {
     let n = a.n;
     let mut p = generate_shuffled_permutation(n);
-    let current_score = 0;
+
+    // 操作回数を最小化する
+    // 操作回数 := 切り替えが必要な辺の数
+    let mut current_score = i64::MAX;
 
     // TODO: 焼きなまし
     for _ in 0..iter_count {
-        let v = rnd::gen_range(0, n);
-        let u = rnd::gen_range(0, n);
+        let e1 = rnd::gen_range(0, n);
+        let e2 = rnd::gen_range(0, n);
 
-        let new_score = 0;
+        p.swap(e1, e2);
 
-        if new_score > current_score {
+        let mut new_score = 0;
+
+        // TODO: 差分更新
+        for i in 0..a.edges.len() {
+            let (v1, v2) = a.pairs[i];
+            let (p_v1, p_v2) = (p[v1], p[v2]);
+            let j = vertex_indicies_to_pair_index(n, p_v1, p_v2);
+            if a.has_edge(i) != b.has_edge(j) {
+                new_score += 1;
+            }
+        }
+
+        if new_score < current_score {
             // 採用
+            eprintln!("{}", new_score);
+            current_score = new_score;
         } else {
             // 不採用、ロールバック
+            p.swap(e1, e2);
         }
     }
 
@@ -128,3 +156,10 @@ pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph, iter_count
 // pub fn calc_graph_similarity_with_beam_search(a: &Graph, b: &Graph) -> i64 {
 //     todo!();
 // }
+
+fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
+    let mn = usize::min(v1, v2);
+    let mx = usize::max(v1, v2);
+
+    ((n - 1) + (n - mn)) * mn / 2 + (mx - mn - 1)
+}
