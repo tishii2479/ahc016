@@ -1,33 +1,35 @@
+#[derive(Debug)]
 pub struct Graph {
     n: usize,
     degrees: Vec<usize>,
-    edges: Vec<Vec<bool>>,
+    edges: Vec<bool>,
+    pairs: Vec<(usize, usize)>,
 }
 
 impl Graph {
-    pub fn from_vec_format(n: usize, vec_format: &Vec<bool>) -> Graph {
+    pub fn from_vec_format(n: usize, vec_format: Vec<bool>) -> Graph {
         let mut degrees = vec![0; n];
-        let mut edges = vec![vec![false; n]; n];
+        let mut edges = vec_format;
+        let mut pairs = vec![(0, 0); edges.len()];
 
         let mut it = 0;
 
         for i in 0..n {
             for j in i + 1..n {
-                if vec_format[it] {
-                    edges[i][j] = true;
-                    edges[j][i] = true;
-
+                if edges[it] {
                     degrees[i] += 1;
                     degrees[j] += 1;
                 }
+                pairs[it] = (i, j);
                 it += 1;
             }
         }
 
         Graph {
-            n: n,
-            degrees: degrees,
-            edges: edges,
+            n,
+            degrees,
+            edges,
+            pairs,
         }
     }
 
@@ -37,6 +39,27 @@ impl Graph {
 
     pub fn to_raw_format(&self) -> String {
         todo!();
+    }
+
+    pub fn has_edge(&self, edge_index: usize) -> bool {
+        self.edges[edge_index]
+    }
+
+    // 現在辺があるかどうかを返す
+    pub fn toggle_edge(&mut self, edge_index: usize) -> bool {
+        debug_assert!(edge_index < self.edges.len());
+
+        self.edges[edge_index] = !self.edges[edge_index];
+        let (v, u) = self.pairs[edge_index];
+        if self.edges[edge_index] {
+            self.degrees[v] += 1;
+            self.degrees[u] += 1;
+        } else {
+            self.degrees[v] -= 1;
+            self.degrees[u] -= 1;
+        }
+
+        self.edges[edge_index]
     }
 }
 
