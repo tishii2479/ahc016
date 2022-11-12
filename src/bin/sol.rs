@@ -22,10 +22,11 @@ fn read_graph_input(stdin: &io::Stdin) -> String {
 
 fn main() {
     const QUERY_COUNT: usize = 100;
-    const ITER_COUNT: usize = 200;
+    const ITER_COUNT: usize = 10000;
 
     let stdin = io::stdin();
     let stdout = io::stdout();
+    let flush = || stdout.lock().flush().unwrap();
 
     let (m, eps) = read_input(&stdin);
 
@@ -35,9 +36,8 @@ fn main() {
     let state = create_optimal_graphs(n, m, ITER_COUNT);
 
     println!("{}", n);
-    stdout.lock().flush().unwrap();
-
     state.output();
+    flush();
 
     // 各クエリを処理する
     for _ in 0..QUERY_COUNT {
@@ -58,6 +58,6 @@ fn main() {
         }
 
         println!("{}", min_graph_index);
-        stdout.lock().flush().unwrap();
+        flush();
     }
 }
