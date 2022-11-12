@@ -1,22 +1,57 @@
-use proconio::input;
+use std::io;
+
+use ahc016::gen_graph::*;
+use ahc016::graph::*;
+mod gen_graph;
 mod graph;
 mod util;
 
-fn main() {
-    const QUERY_COUNT: usize = 100;
-    input! {
-        M: usize,
-        eps: String
+fn read_input(stdin: &io::Stdin) -> (usize, f64) {
+    let mut user_input = String::new();
+    stdin.read_line(&mut user_input);
+    let mut v = vec![];
+    for e in user_input.trim().split(" ") {
+        v.push(e.to_string());
     }
 
+    (v[0].parse().unwrap(), v[1].parse().unwrap())
+}
+
+fn read_graph_input(stdin: &io::Stdin) -> String {
+    let mut user_input = String::new();
+    stdin.read_line(&mut user_input);
+    user_input
+}
+
+fn main() {
+    const QUERY_COUNT: usize = 100;
+    let stdin = io::stdin();
+    let (m, eps) = read_input(&stdin);
+
     // M, epsに対応するグラフを出力する
+    const ITER_COUNT: usize = 100;
+    let n = m;
+    let state = create_optimal_graphs(n, m, ITER_COUNT);
+    println!("{}", n);
+    state.output();
 
     // 各クエリを処理する
     for _ in 0..QUERY_COUNT {
-        input! {
-            h: String
-        }
+        let h = read_graph_input(&stdin);
 
         // hとGとの類似度を求め、類似度が最大のGを出力する
+        let h = Graph::from_raw_format(n, &h);
+        let mut min_graph_index = 0;
+        let mut min_dist = i64::MAX;
+
+        for i in 0..m {
+            let dist = calc_graph_similarity(&h, &state.graphs[i]);
+            if dist < min_dist {
+                min_dist = dist;
+                min_graph_index = i;
+            }
+        }
+
+        println!("{}", min_graph_index);
     }
 }

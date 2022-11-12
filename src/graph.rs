@@ -34,7 +34,11 @@ impl Graph {
     }
 
     pub fn from_raw_format(n: usize, raw_format: &str) -> Graph {
-        todo!();
+        let vec_format = raw_format
+            .chars()
+            .map(|c| if c == '1' { true } else { false })
+            .collect();
+        Graph::from_vec_format(n, vec_format)
     }
 
     pub fn to_raw_format(&self) -> String {
@@ -61,7 +65,6 @@ impl Graph {
             self.degrees[v] -= 1;
             self.degrees[u] -= 1;
         }
-
         self.edges[edge_index]
     }
 }
