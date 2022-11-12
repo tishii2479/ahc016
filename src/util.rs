@@ -47,3 +47,16 @@ pub mod time {
         }
     }
 }
+
+pub fn generate_shuffled_permutation(n: usize) -> Vec<usize> {
+    let mut p = vec![0; n];
+    for i in 0..n {
+        p[i] = i;
+    }
+    // シャッフル
+    for i in 0..n {
+        let j = rnd::gen_range(0, n);
+        p.swap(i, j);
+    }
+    p
+}

@@ -1,3 +1,5 @@
+use crate::util::{generate_shuffled_permutation, rnd};
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Graph {
     n: usize,
@@ -99,12 +101,30 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
 
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
 // 山登りによって頂点の対応付けを行い、最適化された時の必要な操作回数
-pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph) -> i64 {
-    todo!();
+pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph, iter_count: usize) -> i64 {
+    let n = a.n;
+    let mut p = generate_shuffled_permutation(n);
+    let current_score = 0;
+
+    // TODO: 焼きなまし
+    for _ in 0..iter_count {
+        let v = rnd::gen_range(0, n);
+        let u = rnd::gen_range(0, n);
+
+        let new_score = 0;
+
+        if new_score > current_score {
+            // 採用
+        } else {
+            // 不採用、ロールバック
+        }
+    }
+
+    current_score
 }
 
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
 // ビームサーチによって頂点の対応付けを行い、最適化された時の必要な操作回数
-pub fn calc_graph_similarity_with_beam_search(a: &Graph, b: &Graph) -> i64 {
-    todo!();
-}
+// pub fn calc_graph_similarity_with_beam_search(a: &Graph, b: &Graph) -> i64 {
+//     todo!();
+// }

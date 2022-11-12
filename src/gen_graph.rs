@@ -26,7 +26,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, iter_count: usize) -> State {
     let graphs = create_initial_graphs(n, m);
     let mut state = State::new(graphs);
 
-    // 焼きなまし
+    // TODO: 焼きなまし
     for _ in 0..iter_count {
         let current_score = state.score;
 

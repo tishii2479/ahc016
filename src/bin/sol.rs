@@ -50,7 +50,7 @@ fn main() {
 
         // 類似度を求めるのを賢くする
         for i in 0..m {
-            let dist = calc_graph_similarity(&h, &state.graphs[i]);
+            let dist = calc_graph_similarity_with_hill_climbing(&h, &state.graphs[i]);
             if dist < min_dist {
                 min_dist = dist;
                 min_graph_index = i;
