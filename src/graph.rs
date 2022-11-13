@@ -4,7 +4,7 @@ use crate::util::{generate_shuffled_permutation, rnd};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Graph {
-    n: usize,
+    pub n: usize,
     degrees: Vec<usize>,
     // TODO: BitSetにかえる
     edges: Vec<bool>,

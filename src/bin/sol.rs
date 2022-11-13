@@ -24,7 +24,10 @@ fn read_graph_input(stdin: &io::Stdin) -> String {
 
 fn main() {
     time::start_clock();
+
     const QUERY_COUNT: usize = 100;
+    const CONSTRUCT_TIME_LIMIT: f64 = 1.5;
+    const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -32,10 +35,11 @@ fn main() {
 
     let (m, eps) = read_input(&stdin);
 
-    // M, epsに対応するグラフを出力する
+    // TODO: 最適なNを埋め込む
     let n = if eps == 0. { 10 } else { 30 };
 
-    let state = create_optimal_graphs(n, m, eps, 10000);
+    // M, epsに対応するグラフを出力する
+    let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     println!("{}", n);
@@ -46,13 +50,15 @@ fn main() {
     flush();
 
     // 各クエリを処理する
-    for _ in 0..QUERY_COUNT {
+    for q in 0..QUERY_COUNT {
+        let remaining_time = TIME_LIMIT - time::elapsed_seconds();
+        let time_limit: f64 = remaining_time / (QUERY_COUNT - q) as f64;
         // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
-        let best_graph_index = solve(&state, &h, eps);
+        let best_graph_index = solve(&state, &h, eps, time_limit);
         println!("{}", best_graph_index);
         flush();
 

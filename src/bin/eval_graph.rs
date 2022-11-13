@@ -8,6 +8,7 @@ fn main() {
     const N_RANGE: RangeInclusive<usize> = 10..=100;
 
     const TEST_COUNT: usize = 100;
+    const TIME_LIMIT: f64 = 3.;
 
     let args: Vec<String> = env::args().collect();
     eprintln!("{:?}", args);
@@ -36,7 +37,7 @@ fn main() {
                 let mut h = state.graphs[answer_graph_index].clone();
 
                 operate_toggle(&mut h, eps);
-                let expected_graph_index = solve(&state, &h, eps);
+                let expected_graph_index = solve(&state, &h, eps, TIME_LIMIT);
 
                 if answer_graph_index == expected_graph_index {
                     correct_count += 1;

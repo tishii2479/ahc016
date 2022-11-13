@@ -14,7 +14,7 @@ fn main() {
     const M_RANGE: RangeInclusive<usize> = 50..=100;
     const EPS_RANGE: RangeInclusive<usize> = 10..=40;
 
-    const ITER_COUNT: usize = 10000;
+    const TIME_LIMIT: f64 = 1.5;
 
     for m in M_RANGE {
         for e in EPS_RANGE {
@@ -29,7 +29,7 @@ fn main() {
 
             for n in N_RANGE.step_by(10) {
                 // グラフを作成して出力する
-                let state = create_optimal_graphs(n, m, eps, ITER_COUNT);
+                let state = create_optimal_graphs(n, m, eps, TIME_LIMIT);
                 let file_path = format!("data/graphs/{m}_{e}/{n}.txt");
                 let mut file = File::create(file_path).unwrap();
                 write!(file, "{}", state.format_to_string().trim()).unwrap();

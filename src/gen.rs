@@ -1,6 +1,6 @@
 use crate::{
     graph::{calc_graph_similarity, Graph},
-    util::rnd,
+    util::{rnd, time},
 };
 
 pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
@@ -21,14 +21,16 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
     return graphs;
 }
 
-pub fn create_optimal_graphs(n: usize, m: usize, _eps: f64, iter_count: usize) -> State {
+pub fn create_optimal_graphs(n: usize, m: usize, _eps: f64, time_limit: f64) -> State {
+    let start_time = time::elapsed_seconds();
+
     // TODO: epsを考慮する
     // M個のグラフを初期化する
     let graphs = create_initial_graphs(n, m);
     let mut state = State::new(graphs);
 
     // TODO: 焼きなまし
-    for _ in 0..iter_count {
+    while time::elapsed_seconds() < start_time + time_limit {
         let current_score = state.score;
 
         // 辺を付け替える
