@@ -26,7 +26,7 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 0.1;
+    const CONSTRUCT_TIME_LIMIT: f64 = 0.;
     const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
@@ -39,11 +39,11 @@ fn main() {
     let n = if eps == 0. {
         10
     } else if eps <= 0.05 {
+        30
+    } else if eps <= 0.13 {
         40
-    } else if eps <= 0.10 {
-        60
     } else if m <= 40 && eps <= 0.30 {
-        60
+        50
     } else {
         100
     };
