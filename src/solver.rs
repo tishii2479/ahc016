@@ -1,3 +1,5 @@
+use std::ops::RangeInclusive;
+
 use crate::{
     gen::State,
     graph::{calc_graph_similarity, operate_toggle, Graph},
@@ -7,17 +9,9 @@ use crate::{
 pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let start_time = time::elapsed_seconds();
 
-    const E: f64 = 5.;
     let n = h.n;
     let h_edge_count = h.calc_edge_count();
     let max_edge_count = n * (n - 1) / 2;
-    let error_width = (max_edge_count as f64 * eps * (1. - eps)).powf(0.5) * E;
-
-    let min_edge_count = i64::max(0, h_edge_count as i64 - error_width as i64) as usize;
-    let max_edge_count = h_edge_count + error_width as usize;
-
-    let mut best_graph_index = 0;
-    let mut min_score = 1e10;
 
     let mut candidate_graph_count: usize = 0;
 
@@ -25,28 +19,44 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
         (edge_count as f64 * (1. - 2. * eps) + max_edge_count as f64 * eps) as usize
     };
 
-    for i in 0..state.graphs.len() {
-        let graph_edge_count = state.graphs[i].calc_edge_count();
-        let expected_graph_edge_count = expected_graph_edge_count(graph_edge_count);
-        if min_edge_count <= expected_graph_edge_count
-            && expected_graph_edge_count <= max_edge_count
-        {
-            candidate_graph_count += 1;
+    let mut err = 4.;
+    let mut edge_count_range: RangeInclusive<usize>;
+
+    // 辺の総数の期待値が標準偏差 * err の範囲にあるグラフの数を数えて、
+    // その数が0以上になるまで err を増やす
+    // 調べるグラフの数を削減することが目的
+    loop {
+        let std_var = (max_edge_count as f64 * eps * (1. - eps)).powf(0.5);
+        let error_width = std_var * err;
+
+        let min_edge_count = i64::max(0, h_edge_count as i64 - error_width as i64) as usize;
+        let max_edge_count = h_edge_count + error_width as usize;
+
+        edge_count_range = min_edge_count..=max_edge_count;
+
+        for i in 0..state.graphs.len() {
+            let is_occurable = edge_count_range.contains(&expected_graph_edge_count(
+                state.graphs[i].calc_edge_count(),
+            ));
+            if is_occurable {
+                candidate_graph_count += 1;
+            }
+        }
+        // error_widthの範囲を広げる
+        err += 1.;
+        if candidate_graph_count > 0 {
+            break;
         }
     }
 
-    let has_candidate = candidate_graph_count > 0;
-    if !has_candidate {
-        candidate_graph_count = state.graphs.len();
-    }
+    let mut best_graph_index = 0;
+    let mut min_score = 1e10;
 
     for i in 0..state.graphs.len() {
-        let graph_edge_count = state.graphs[i].calc_edge_count();
-        let expected_graph_edge_count = expected_graph_edge_count(graph_edge_count);
-        if has_candidate
-            && (expected_graph_edge_count < min_edge_count
-                || max_edge_count < expected_graph_edge_count)
-        {
+        let is_occurable = edge_count_range.contains(&expected_graph_edge_count(
+            state.graphs[i].calc_edge_count(),
+        ));
+        if !is_occurable {
             continue;
         }
 
@@ -71,6 +81,7 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
             min_score = score;
             best_graph_index = i;
         }
+
         candidate_graph_count -= 1;
     }
 
