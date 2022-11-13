@@ -1,7 +1,7 @@
 use std::io;
 use std::io::Write;
 
-use ahc016::gen_graph::*;
+use ahc016::gen::*;
 use ahc016::graph::*;
 use ahc016::util;
 use ahc016::util::time;
@@ -35,16 +35,19 @@ fn main() {
     // M, epsに対応するグラフを出力する
     let n = if eps == 0. { 10 } else { 30 };
 
-    let state = create_optimal_graphs(n, m, 10000);
+    let state = create_optimal_graphs(n, m, eps, 10000);
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     println!("{}", n);
-    state.output();
+    let g = state.format_to_string();
+    for raw_g in g.split(" ") {
+        println!("{}", raw_g);
+    }
     flush();
 
     // 各クエリを処理する
     for q in 0..QUERY_COUNT {
-        eprintln!("Query: {}", q);
+        // eprintln!("Query: {}", q);
 
         let h = read_graph_input(&stdin);
         // let h_edge_count = h.matches("1").count();
@@ -92,7 +95,7 @@ fn main() {
         }
 
         println!("{}", best_graph_index);
-        eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
+        // eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
         flush();
     }
 

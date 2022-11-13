@@ -1,3 +1,3 @@
-pub mod gen_graph;
+pub mod gen;
 pub mod graph;
 pub mod util;

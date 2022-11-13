@@ -21,7 +21,8 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
     return graphs;
 }
 
-pub fn create_optimal_graphs(n: usize, m: usize, iter_count: usize) -> State {
+pub fn create_optimal_graphs(n: usize, m: usize, _eps: f64, iter_count: usize) -> State {
+    // TODO: epsを考慮する
     // M個のグラフを初期化する
     let graphs = create_initial_graphs(n, m);
     let mut state = State::new(graphs);
@@ -178,10 +179,11 @@ impl State {
         score
     }
 
-    pub fn output(&self) {
-        for graph in &self.graphs {
-            println!("{}", graph.to_raw_format());
-        }
+    pub fn format_to_string(&self) -> String {
+        self.graphs
+            .iter()
+            .map(|g| g.to_raw_format() + " ")
+            .collect()
     }
 
     pub fn dump_similarity(&self) {
