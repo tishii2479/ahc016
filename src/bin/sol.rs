@@ -35,6 +35,8 @@ fn main() {
 
     let (m, eps) = read_input(&stdin);
 
+    eprintln!("M = {}, eps = {}", m, eps);
+
     // TODO: 最適なNを埋め込む
     let n = if eps == 0. {
         10
