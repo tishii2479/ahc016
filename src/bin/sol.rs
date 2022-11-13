@@ -26,7 +26,7 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 1.;
+    const CONSTRUCT_TIME_LIMIT: f64 = 0.1;
     const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
