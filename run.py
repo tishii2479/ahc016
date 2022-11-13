@@ -2,7 +2,7 @@ import multiprocessing
 import subprocess
 
 CASE = 100
-TL = 11.0
+TL = 30.0
 
 
 def execute_case(seed):
@@ -60,7 +60,7 @@ def main():
             err_count += err
 
             print(
-                f"case {seed:3}: (score: {scores[-1][0]:9}, current ave: {total / count:12.2f}, m: {M:3}, eps: {eps:4.2}, err: {err:3})",
+                f"case {seed:3}: (score: {scores[-1][0]:>13,}, current ave: {total / count:>15,.2f}, m: {M:3}, eps: {eps:4.2f}, err: {err:3})",
                 flush=True,
             )
 
@@ -71,7 +71,7 @@ def main():
 
     print(f"err ave: {err_count / CASE}")
 
-    M_div = list(range(10, 101, 10))
+    M_div = list(range(10, 101, 30))
     eps_div = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
 
     def is_in(v, low, high):

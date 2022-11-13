@@ -33,7 +33,7 @@ fn main() {
     let (m, eps) = read_input(&stdin);
 
     // M, epsに対応するグラフを出力する
-    let n = if eps == 0. { 10 } else { 20 };
+    let n = if eps == 0. { 10 } else { 30 };
 
     let state = create_optimal_graphs(n, m, 10000);
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
@@ -72,7 +72,7 @@ fn main() {
             // }
 
             // モンテカルロ法
-            // trial回ランダムにグラフに操作をして、その結果のグラフとhの類似度の平均を使う
+            // `TRIAL_COUNT`回ランダムにグラフに操作をして、その結果のグラフとhの類似度の平均を使う
             const TRIAL_COUNT: usize = 500;
             let mut score_sum = 0;
             for _ in 0..TRIAL_COUNT {
