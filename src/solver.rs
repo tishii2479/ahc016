@@ -21,26 +21,31 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
 
     let mut candidate_graph_count: usize = 0;
 
-    // TODO: 類似度を求めるのを賢くする
+    let expected_graph_edge_count = |edge_count: usize| {
+        (edge_count as f64 * (1. - 2. * eps) + max_edge_count as f64 * eps) as usize
+    };
+
     for i in 0..state.graphs.len() {
         let graph_edge_count = state.graphs[i].calc_edge_count();
-        let expected_graph_edge_count =
-            (graph_edge_count as f64 * (1. - 2. * eps) + (n * (n - 1) / 2) as f64 * eps) as usize;
-        if expected_graph_edge_count < min_edge_count || max_edge_count < expected_graph_edge_count
+        let expected_graph_edge_count = expected_graph_edge_count(graph_edge_count);
+        if min_edge_count <= expected_graph_edge_count
+            && expected_graph_edge_count <= max_edge_count
         {
-            continue;
+            candidate_graph_count += 1;
         }
-        candidate_graph_count += 1;
     }
 
-    assert!(candidate_graph_count > 0);
-    eprintln!("candidate_graph_count: {}", candidate_graph_count);
+    let has_candidate = candidate_graph_count > 0;
+    if !has_candidate {
+        candidate_graph_count = state.graphs.len();
+    }
 
     for i in 0..state.graphs.len() {
         let graph_edge_count = state.graphs[i].calc_edge_count();
-        let expected_graph_edge_count =
-            (graph_edge_count as f64 * (1. - 2. * eps) + (n * (n - 1) / 2) as f64 * eps) as usize;
-        if expected_graph_edge_count < min_edge_count || max_edge_count < expected_graph_edge_count
+        let expected_graph_edge_count = expected_graph_edge_count(graph_edge_count);
+        if has_candidate
+            && (expected_graph_edge_count < min_edge_count
+                || max_edge_count < expected_graph_edge_count)
         {
             continue;
         }
@@ -49,8 +54,11 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
         // `TRIAL_COUNT`回ランダムにグラフに操作をして、その結果のグラフとhの類似度の平均を使う
         let current_time = time::elapsed_seconds();
         let usable_time = (start_time + time_limit - current_time) / candidate_graph_count as f64;
+
         let mut counter = 0;
         let mut score_sum = 0;
+
+        // TODO: 時間管理を効率的に
         while time::elapsed_seconds() - current_time < usable_time {
             let mut graph = state.graphs[i].clone();
             operate_toggle(&mut graph, eps);

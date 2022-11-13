@@ -26,7 +26,7 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 1.5;
+    const CONSTRUCT_TIME_LIMIT: f64 = 1.;
     const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
@@ -40,7 +40,6 @@ fn main() {
 
     // M, epsに対応するグラフを出力する
     let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
-    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     println!("{}", n);
     let g = state.format_to_string();

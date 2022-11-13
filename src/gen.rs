@@ -30,6 +30,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, _eps: f64, time_limit: f64) -> 
     let mut state = State::new(graphs);
 
     // TODO: 焼きなまし
+    // TODO: 時間管理を効率的に
     while time::elapsed_seconds() < start_time + time_limit {
         let current_score = state.score;
 
