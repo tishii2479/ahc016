@@ -7,11 +7,10 @@ fn main() {
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     const N_RANGE: RangeInclusive<usize> = 10..=100;
 
-    const TEST_COUNT: usize = 100;
+    const TEST_COUNT: usize = 5;
     const TIME_LIMIT: f64 = 3.;
 
     let args: Vec<String> = env::args().collect();
-    eprintln!("{:?}", args);
     let m = args[1].parse::<usize>().unwrap();
     let eps = args[2].parse::<f64>().unwrap();
 

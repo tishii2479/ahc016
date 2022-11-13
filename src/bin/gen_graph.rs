@@ -1,5 +1,6 @@
 use ahc016::gen::create_optimal_graphs;
 use std::{
+    env,
     fs::{self, File},
     io::Write,
     ops::RangeInclusive,
@@ -11,29 +12,26 @@ fn main() {
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     const N_RANGE: RangeInclusive<usize> = 10..=100;
 
-    const M_RANGE: RangeInclusive<usize> = 50..=100;
-    const EPS_RANGE: RangeInclusive<usize> = 10..=40;
+    let args: Vec<String> = env::args().collect();
+    let m = args[1].parse::<usize>().unwrap();
+    let eps = args[2].parse::<f64>().unwrap();
 
-    const TIME_LIMIT: f64 = 1.5;
+    const TIME_LIMIT: f64 = 1.;
+    let e = ((eps * 100.) as i64).to_string();
 
-    for m in M_RANGE {
-        for e in EPS_RANGE {
-            let eps = e as f64 * 0.01;
-            eprintln!("Creating M = {}, eps = {}...", m, eps);
+    eprintln!("Creating M = {}, eps = {}...", m, eps);
 
-            // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
-            let output_dir = format!("data/graphs/{m}_{e}/");
-            if !Path::exists(Path::new(&output_dir)) {
-                fs::create_dir_all(&output_dir).unwrap();
-            }
+    // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
+    let output_dir = format!("data/graphs/{m}_{e}/");
+    if !Path::exists(Path::new(&output_dir)) {
+        fs::create_dir_all(&output_dir).unwrap();
+    }
 
-            for n in N_RANGE.step_by(10) {
-                // グラフを作成して出力する
-                let state = create_optimal_graphs(n, m, eps, TIME_LIMIT);
-                let file_path = format!("data/graphs/{m}_{e}/{n}.txt");
-                let mut file = File::create(file_path).unwrap();
-                write!(file, "{}", state.format_to_string().trim()).unwrap();
-            }
-        }
+    for n in N_RANGE.step_by(10) {
+        // グラフを作成して出力する
+        let state = create_optimal_graphs(n, m, eps, TIME_LIMIT);
+        let file_path = format!("data/graphs/{m}_{e}/{n}.txt");
+        let mut file = File::create(file_path).unwrap();
+        write!(file, "{}", state.format_to_string().trim()).unwrap();
     }
 }

@@ -8,7 +8,7 @@ def eval_graph(params):
     m, e = params
 
     cmd = f"./target/release/eval_graph {m} {e:.2f}"
-    print(cmd)
+    print("running:", cmd)
     proc = subprocess.run(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
     )
@@ -26,8 +26,8 @@ def eval_graph(params):
 def main():
     subprocess.run("cargo build --release", shell=True)
     params = []
-    for m in range(10, 101):
-        for e in range(0, 41):
+    for m in range(10, 101, 10):
+        for e in range(0, 41, 5):
             params.append((m, e / 100))
 
     n_map = {}
