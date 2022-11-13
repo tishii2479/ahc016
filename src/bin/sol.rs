@@ -60,6 +60,8 @@ fn main() {
     }
     flush();
 
+    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
+
     let mut simulated_graphs: Vec<Vec<Graph>> = vec![vec![]; state.graphs.len()];
 
     // 各クエリを処理する

@@ -190,7 +190,7 @@ pub fn calc_graph_similarity_with_sa(
 //     todo!();
 // }
 
-fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
+pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
     let mn = usize::min(v1, v2);
     let mx = usize::max(v1, v2);
 
