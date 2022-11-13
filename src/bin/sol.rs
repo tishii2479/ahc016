@@ -35,18 +35,20 @@ fn main() {
 
     let (m, eps) = read_input(&stdin);
 
-    eprintln!("M = {}, eps = {}", m, eps);
-
     // TODO: 最適なNを埋め込む
     let n = if eps == 0. {
         10
-    } else if eps <= 0.101 {
+    } else if eps <= 0.05 {
+        40
+    } else if eps <= 0.10 {
         60
-    } else if m <= 40 && eps <= 0.301 {
+    } else if m <= 40 && eps <= 0.30 {
         60
     } else {
         100
     };
+
+    eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 
     // M, epsに対応するグラフを出力する
     let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
