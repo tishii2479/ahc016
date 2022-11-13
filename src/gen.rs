@@ -3,21 +3,26 @@ use crate::{
     util::{rnd, time},
 };
 
-pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
+pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す
         // TODO: 等間隔以外を試す
-        let mut graph_raw_format = vec![false; max_graph_size];
         let graph_size = max_graph_size * i / (m - 1);
 
-        if i % 2 == 0 {
+        // ex: 9 9 0 0 0 0
+        let f1 = || {
+            let mut graph_raw_format = vec![false; max_graph_size];
             for j in 0..graph_size {
                 graph_raw_format[j] = true;
             }
-        } else {
+            return graph_raw_format;
+        };
+        // ex: 5 5 5 3 0 0
+        let f2 = || {
+            let mut graph_raw_format = vec![false; max_graph_size];
             let mut counter = 0;
             for j in 1..n {
                 for i in 0..j {
@@ -29,18 +34,52 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
                     counter += 1;
                 }
             }
-        }
+            graph_raw_format
+        };
+        // ex: 3 3 3 3 3 3
+        let f3 = || {
+            let mut graph_raw_format = vec![false; max_graph_size];
+            let mut counter = 0;
+            for d in 1..n {
+                for i in 0..n - d {
+                    if counter >= graph_size {
+                        break;
+                    }
+                    let j = i + d;
+                    let p = vertex_indicies_to_pair_index(n, i, j);
+                    graph_raw_format[p] = true;
+                    counter += 1;
+                }
+            }
+            graph_raw_format
+        };
+
+        let graph_raw_format = if eps <= 0.3 || m <= 40 {
+            if i % 2 == 0 {
+                f1()
+            } else {
+                f2()
+            }
+        } else {
+            if i % 3 == 0 {
+                f1()
+            } else if i % 3 == 1 {
+                f2()
+            } else {
+                f3()
+            }
+        };
         graphs.push(Graph::from_vec_format(n, graph_raw_format));
     }
     return graphs;
 }
 
-pub fn create_optimal_graphs(n: usize, m: usize, _eps: f64, time_limit: f64) -> State {
+pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> State {
     let start_time = time::elapsed_seconds();
 
     // TODO: epsを考慮する
     // M個のグラフを初期化する
-    let graphs = create_initial_graphs(n, m);
+    let graphs = create_initial_graphs(n, m, eps);
     let mut state = State::new(graphs);
 
     // TODO: 焼きなまし
@@ -230,7 +269,8 @@ impl State {
 fn test_perform_reverse_swap_command() {
     let n = 5;
     let m = 5;
-    let graphs = create_initial_graphs(n, m);
+    let eps = 0.1;
+    let graphs = create_initial_graphs(n, m, eps);
     let mut state = State::new(graphs);
 
     let mut commands = vec![];
