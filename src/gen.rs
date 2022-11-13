@@ -92,6 +92,17 @@ impl State {
         state
     }
 
+    pub fn from_raw_format(n: usize, raw_format: &str) -> State {
+        let graphs = raw_format
+            .trim()
+            .split(" ")
+            .into_iter()
+            .map(|x| Graph::from_raw_format(n, x))
+            .collect();
+
+        State::new(graphs)
+    }
+
     fn can_perform_command(&mut self, command: &Command) -> bool {
         match command {
             Command::Swap {

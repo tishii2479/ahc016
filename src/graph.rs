@@ -96,6 +96,16 @@ impl Graph {
     }
 }
 
+// epsの確率でgraphを変化させる
+pub fn operate_toggle(graph: &mut Graph, eps: f64) {
+    // TODO: maskに変えて、xorをとる
+    for j in 0..graph.get_edge_size() {
+        if rnd::nextf() < eps {
+            graph.toggle_edge(j);
+        }
+    }
+}
+
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
 pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
     let mut a_degrees = a.degrees.clone();
