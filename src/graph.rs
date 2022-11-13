@@ -90,6 +90,10 @@ impl Graph {
         }
         ret
     }
+
+    pub fn get_edge_size(&self) -> usize {
+        self.edges.len()
+    }
 }
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
