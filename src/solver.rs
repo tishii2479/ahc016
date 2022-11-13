@@ -6,7 +6,13 @@ use crate::{
     util::time,
 };
 
-pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
+pub fn solve(
+    state: &State,
+    h: &Graph,
+    eps: f64,
+    time_limit: f64,
+    simulated_graphs: &mut Vec<Vec<Graph>>, // シミュレーションした結果のグラフを保持する
+) -> usize {
     let start_time = time::elapsed_seconds();
 
     let n = h.n;
@@ -53,8 +59,6 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let mut best_graph_index = 0;
     let mut min_score = 1e10;
 
-    let mut simulated_graphs: Vec<Vec<Graph>> = vec![vec![]; state.graphs.len()];
-
     for i in 0..state.graphs.len() {
         let is_occurable = edge_count_range.contains(&expected_graph_edge_count(
             state.graphs[i].calc_edge_count(),
@@ -81,8 +85,6 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
             score_sum += calc_graph_similarity(&h, &simulated_graphs[i][counter]);
             counter += 1;
         }
-
-        eprintln!("{}", counter);
 
         let score = score_sum as f64 / counter as f64;
         if score < min_score {

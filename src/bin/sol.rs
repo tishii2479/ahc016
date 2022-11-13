@@ -58,19 +58,21 @@ fn main() {
     }
     flush();
 
+    let mut simulated_graphs: Vec<Vec<Graph>> = vec![vec![]; state.graphs.len()];
+
     // 各クエリを処理する
     for q in 0..QUERY_COUNT {
         let remaining_time = TIME_LIMIT - time::elapsed_seconds();
         let time_limit: f64 = remaining_time / (QUERY_COUNT - q) as f64;
+
         // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
-        let best_graph_index = solve(&state, &h, eps, time_limit);
+        let best_graph_index = solve(&state, &h, eps, time_limit, &mut simulated_graphs);
         println!("{}", best_graph_index);
         flush();
-
         // eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
     }
 
