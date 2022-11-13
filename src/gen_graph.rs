@@ -87,7 +87,7 @@ impl State {
             similarity_matrix,
         };
         state.update_similarity_matrix_slow();
-        state.score = state.calc_score();
+        state.score = state.calc_score_slow();
         state
     }
 
@@ -113,9 +113,9 @@ impl State {
             } => {
                 self.graphs[*graph_index].toggle_edge(*edge_index1);
                 self.graphs[*graph_index].toggle_edge(*edge_index2);
-                self.update_similarity_matrix(*graph_index);
+                let score_diff = self.update_similarity_matrix(*graph_index);
 
-                self.score = self.calc_score();
+                self.score += score_diff;
             }
         }
     }
@@ -132,17 +132,22 @@ impl State {
         }
     }
 
-    fn update_similarity_matrix(&mut self, updated_graph_index: usize) {
+    fn update_similarity_matrix(&mut self, updated_graph_index: usize) -> i64 {
         // TODO: 全てのグラフと試すのではなく、何個かサンプリングする
+        let mut score_diff = 0;
         for j in 0..self.graphs.len() {
             if updated_graph_index == j {
                 continue;
             }
             let similarity =
                 calc_graph_similarity(&self.graphs[updated_graph_index], &self.graphs[j]);
+
+            score_diff += 2 * (similarity - self.similarity_matrix[updated_graph_index][j]);
+
             self.similarity_matrix[updated_graph_index][j] = similarity;
             self.similarity_matrix[j][updated_graph_index] = similarity;
         }
+        score_diff
     }
 
     fn update_similarity_matrix_slow(&mut self) {
@@ -158,19 +163,17 @@ impl State {
         }
     }
 
-    fn calc_score(&self) -> i64 {
-        // 各グラフについて、最も近いグラフとの距離の総和
+    fn calc_score_slow(&self) -> i64 {
+        // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut score = 0;
         for i in 0..self.graphs.len() {
-            let mut min_dist = i64::MAX;
             for j in 0..self.graphs.len() {
                 if i == j {
                     continue;
                 }
-                min_dist = i64::min(min_dist, self.similarity_matrix[i][j]);
+                score += self.similarity_matrix[i][j];
             }
-            score += min_dist;
         }
         score
     }
@@ -222,11 +225,11 @@ fn test_perform_reverse_swap_command() {
             copied_state_greedy.graphs[graph_index].toggle_edge(edge_index1);
             copied_state_greedy.graphs[graph_index].toggle_edge(edge_index2);
         }
-        assert_eq!(state.score, state.calc_score());
+        assert_eq!(state.score, state.calc_score_slow());
     }
 
     copied_state_greedy.update_similarity_matrix_slow();
-    copied_state_greedy.score = copied_state_greedy.calc_score();
+    copied_state_greedy.score = copied_state_greedy.calc_score_slow();
 
     assert_eq!(state, copied_state_greedy);
 

@@ -35,6 +35,7 @@ fn main() {
     let n = if eps == 0. { 10 } else { m };
 
     let state = create_optimal_graphs(n, m, 10000);
+    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     println!("{}", n);
     state.output();
