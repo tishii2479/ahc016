@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write};
 
-use crate::util::{generate_shuffled_permutation, rnd};
+use crate::util::{generate_shuffled_permutation, rnd, Dsu};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Graph {
@@ -106,8 +106,26 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     }
 }
 
+pub fn calc_connected_components_size(graph: &Graph) -> Vec<usize> {
+    let mut uf = Dsu::new(graph.n);
+    for i in 0..graph.edges.len() {
+        if graph.edges[i] {
+            let (v, u) = graph.pairs[i];
+            uf.merge(v, u);
+        }
+    }
+    let mut sizes = vec![];
+    for i in 0..graph.n {
+        if uf.leader(i) == i {
+            sizes.push(uf.size(i));
+        }
+    }
+    sizes.sort_by(|a, b| b.cmp(a));
+    sizes
+}
+
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
-pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
+fn calc_degrees_similarity(a: &Graph, b: &Graph) -> i64 {
     // TODO: degreesの管理を止める
     let mut a_degrees = a.degrees.clone();
     let mut b_degrees = b.degrees.clone();
@@ -123,7 +141,29 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
         score += d * d;
     }
 
-    return score;
+    score
+}
+
+#[allow(unused)]
+fn calc_connected_size_similarity(a: &Graph, b: &Graph) -> i64 {
+    let a = calc_connected_components_size(&a);
+    let b = calc_connected_components_size(&b);
+
+    let mut score = 0;
+
+    for i in 0..usize::max(a.len(), b.len()) {
+        let ea = if i < a.len() { a[i] } else { 0 };
+        let eb = if i < b.len() { b[i] } else { 0 };
+        let d = ea as i64 - eb as i64;
+        score += d * d;
+    }
+
+    score
+}
+
+// グラフの類似度を返す関数
+pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
+    calc_degrees_similarity(&a, &b)
 }
 
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
