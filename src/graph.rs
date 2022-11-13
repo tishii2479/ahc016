@@ -108,6 +108,7 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
 pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
+    // TODO: degreesの管理を止める
     let mut a_degrees = a.degrees.clone();
     let mut b_degrees = b.degrees.clone();
     a_degrees.sort();
@@ -115,14 +116,14 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
 
     debug_assert_eq!(a.n, b.n);
 
-    let mut sum = 0;
+    let mut score = 0;
 
     for i in 0..a.n {
         let d = a_degrees[i] as i64 - b_degrees[i] as i64;
-        sum += d * d;
+        score += d * d;
     }
 
-    return sum;
+    return score;
 }
 
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数

@@ -1,6 +1,6 @@
 use crate::{
     graph::{calc_graph_similarity, vertex_indicies_to_pair_index, Graph},
-    util::{rnd, time, Dsu},
+    util::{rnd, time},
 };
 
 pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
@@ -8,6 +8,7 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
     let max_graph_size = n * (n - 1) / 2;
 
     for i in 0..m {
+        // TODO: graph_raw_formatを使い回す
         let mut graph_raw_format = vec![false; max_graph_size];
         let graph_size = max_graph_size * i / (m - 1);
 
@@ -16,45 +17,15 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
                 graph_raw_format[j] = true;
             }
         } else {
-            let mut uf = Dsu::new(n);
-
-            eprintln!("s: {}", graph_size);
-            for _ in 0..graph_size {
-                // 連結成分を減らさない辺を探す
-                let mut r = 0;
-                let mut c = 1;
-                while r < n
-                    && c < n
-                    && (!uf.same(r, c) || graph_raw_format[vertex_indicies_to_pair_index(n, r, c)])
-                {
-                    c += 1;
-                    if c == n {
-                        r += 1;
-                        c = r + 1;
+            let mut counter = 0;
+            for j in 1..n {
+                for i in 0..j {
+                    if counter >= graph_size {
+                        break;
                     }
-                }
-
-                if r < n && c < n && uf.same(r, c) {
-                    // 連結成分を減らさない辺が見つかった
-                    let p = vertex_indicies_to_pair_index(n, r, c);
-                    uf.merge(r, c);
-                    eprintln!("a: {} {}", r, c);
+                    let p = vertex_indicies_to_pair_index(n, i, j);
                     graph_raw_format[p] = true;
-                } else {
-                    // 連結成分を減らさない辺が見つからなかった
-                    let mut r = 0;
-                    let mut c = 1;
-                    while graph_raw_format[vertex_indicies_to_pair_index(n, r, c)] {
-                        c += 1;
-                        if c == n {
-                            r += 1;
-                            c = r + 1;
-                        }
-                    }
-                    let p = vertex_indicies_to_pair_index(n, r, c);
-                    eprintln!("b: {} {}", r, c);
-                    uf.merge(r, c);
-                    graph_raw_format[p] = true;
+                    counter += 1;
                 }
             }
         }
