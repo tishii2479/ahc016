@@ -36,7 +36,7 @@ fn main() {
     let (m, eps) = read_input(&stdin);
 
     // TODO: 最適なNを埋め込む
-    let n = if eps == 0. { 10 } else { 30 };
+    let n = if eps == 0. { 10 } else { 60 };
 
     // M, epsに対応するグラフを出力する
     let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);

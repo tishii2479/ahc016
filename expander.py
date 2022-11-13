@@ -4,7 +4,6 @@ if __name__ == "__main__":
 
     src = []
     with open(lib_file, "r") as f:
-        # src.append("pub mod ahc016 {\n")
         for line in f:
             if len(line) >= 7 and line[:7] == "pub mod":
                 lib_name = line.split(" ")[2][:-2]
@@ -22,11 +21,10 @@ if __name__ == "__main__":
                 src.append("}\n")
             else:
                 src.append(line)
-        # src.append("}\n")
 
     with open(main_file, "r") as f:
         for line in f:
-            src.append(line)
+            src.append(line.replace("ahc016", "crate"))
 
     for line in src:
         print(line, end="")

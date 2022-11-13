@@ -9,11 +9,7 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
     for i in 0..m {
         let mut graph_raw_format = vec![false; max_graph_size];
         let graph_size = max_graph_size * i / (m - 1);
-        for _ in 0..graph_size {
-            let mut i: usize = rnd::gen_range(0, max_graph_size);
-            while graph_raw_format[i] == true {
-                i = rnd::gen_range(0, max_graph_size);
-            }
+        for i in 0..graph_size {
             graph_raw_format[i] = true;
         }
         graphs.push(Graph::from_vec_format(n, graph_raw_format));
