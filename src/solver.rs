@@ -6,13 +6,7 @@ use crate::{
     util::time,
 };
 
-pub fn solve(
-    state: &State,
-    h: &Graph,
-    eps: f64,
-    time_limit: f64,
-    simulated_graphs: &mut Vec<Vec<Graph>>, // シミュレーションした結果のグラフを保持する
-) -> usize {
+pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let start_time = time::elapsed_seconds();
 
     let n = h.n;
@@ -77,14 +71,13 @@ pub fn solve(
 
         // TODO: 時間管理を効率的に
         while time::elapsed_seconds() - current_time < usable_time {
-            while counter >= simulated_graphs[i].len() {
-                let mut graph = state.graphs[i].clone();
-                operate_toggle(&mut graph, eps);
-                simulated_graphs[i].push(graph);
-            }
-            score_sum += calc_graph_similarity(&h, &simulated_graphs[i][counter]);
+            let mut graph = state.graphs[i].clone();
+            operate_toggle(&mut graph, eps);
+            score_sum += calc_graph_similarity(&h, &graph);
             counter += 1;
         }
+
+        eprintln!("{}", counter);
 
         let score = score_sum as f64 / counter as f64;
         if score < min_score {

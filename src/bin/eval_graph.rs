@@ -1,11 +1,6 @@
 use std::{env, fs::File, io::Read, ops::RangeInclusive};
 
-use ahc016::{
-    gen::State,
-    graph::{operate_toggle, Graph},
-    solver::solve,
-    util,
-};
+use ahc016::{gen::State, graph::operate_toggle, solver::solve, util};
 
 // 各M, epsについて、最適なNを探し、そのグラフを出力する
 fn main() {
@@ -33,7 +28,6 @@ fn main() {
             file.read_to_string(&mut raw_data).unwrap();
 
             let state = State::from_raw_format(n, &raw_data);
-            let mut simulated_graphs: Vec<Vec<Graph>> = vec![vec![]; state.graphs.len()];
 
             let mut correct_count = 0;
 
@@ -42,8 +36,7 @@ fn main() {
                 let mut h = state.graphs[answer_graph_index].clone();
 
                 operate_toggle(&mut h, eps);
-                let expected_graph_index =
-                    solve(&state, &h, eps, TIME_LIMIT, &mut simulated_graphs);
+                let expected_graph_index = solve(&state, &h, eps, TIME_LIMIT);
 
                 if answer_graph_index == expected_graph_index {
                     correct_count += 1;
