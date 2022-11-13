@@ -1,3 +1,5 @@
+use std::{fs::File, io::Write};
+
 use crate::util::{generate_shuffled_permutation, rnd};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -111,16 +113,27 @@ pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
 
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
 // 山登りによって頂点の対応付けを行い、最適化された時の必要な操作回数
-pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph, iter_count: usize) -> i64 {
+pub fn calc_graph_similarity_with_sa(
+    a: &Graph,
+    b: &Graph,
+    iter_count: usize,
+    start_temp: f64,
+    end_temp: f64,
+    write_score_log: bool,
+) -> i64 {
     let n = a.n;
     let mut p = generate_shuffled_permutation(n);
 
     // 操作回数を最小化する
     // 操作回数 := 切り替えが必要な辺の数
     let mut current_score = i64::MAX;
+    let mut scores = vec![];
 
     // TODO: 焼きなまし
-    for _ in 0..iter_count {
+    for iter in 0..iter_count {
+        let progress = iter as f64 / iter_count as f64;
+        let temp = start_temp.powf(1. - progress) * end_temp.powf(progress);
+
         let e1 = rnd::gen_range(0, n);
         let e2 = rnd::gen_range(0, n);
 
@@ -138,14 +151,20 @@ pub fn calc_graph_similarity_with_hill_climbing(a: &Graph, b: &Graph, iter_count
             }
         }
 
-        if new_score < current_score {
+        let adopt = (-(new_score - current_score) as f64 / temp).exp() > rnd::nextf();
+        if adopt {
             // 採用
-            eprintln!("{}", new_score);
             current_score = new_score;
         } else {
             // 不採用、ロールバック
             p.swap(e1, e2);
         }
+        scores.push(current_score);
+    }
+
+    if write_score_log {
+        let mut file = File::create("score.log").unwrap();
+        writeln!(file, "{:?}", scores).unwrap();
     }
 
     current_score
