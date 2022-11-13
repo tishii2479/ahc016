@@ -1,11 +1,13 @@
 if __name__ == "__main__":
-    main_file = "src/main.rs"
+    main_file = "src/bin/sol.rs"
+    lib_file = "src/lib.rs"
 
     src = []
-    with open(main_file, "r") as f:
+    with open(lib_file, "r") as f:
+        # src.append("pub mod ahc016 {\n")
         for line in f:
-            if len(line) >= 3 and line[:3] == "mod":
-                lib_name = line.split(" ")[1][:-2]
+            if len(line) >= 7 and line[:7] == "pub mod":
+                lib_name = line.split(" ")[2][:-2]
                 src.append(f"pub mod {lib_name} {{\n")
                 with open(f"src/{lib_name}.rs", "r") as f:
                     is_test = False
@@ -20,6 +22,11 @@ if __name__ == "__main__":
                 src.append("}\n")
             else:
                 src.append(line)
+        # src.append("}\n")
+
+    with open(main_file, "r") as f:
+        for line in f:
+            src.append(line)
 
     for line in src:
         print(line, end="")

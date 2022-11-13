@@ -8,7 +8,7 @@ def gen_graph(params):
     m, e = params
 
     cmd = f"./target/release/gen_graph {m} {e:.2f}"
-    print(cmd)
+    print("running:", cmd)
     proc = subprocess.run(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
     )

@@ -140,7 +140,7 @@ pub fn calc_graph_similarity_with_sa(
 
     // 操作回数を最小化する
     // 操作回数 := 切り替えが必要な辺の数
-    let mut current_score = i64::MAX;
+    let mut current_score = 1e10 as i64;
     let mut scores = vec![];
 
     // TODO: 焼きなまし
