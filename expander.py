@@ -22,6 +22,8 @@ if __name__ == "__main__":
             else:
                 src.append(line)
 
+    src.append("\n")
+
     with open(main_file, "r") as f:
         for line in f:
             src.append(line.replace("ahc016", "crate"))

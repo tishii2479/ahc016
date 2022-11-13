@@ -6,6 +6,7 @@ use crate::{
     util::time,
 };
 
+// TODO: 次数列だけを使うなら、シミュレーション後の次数列を使い回す
 pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let start_time = time::elapsed_seconds();
 
@@ -76,8 +77,6 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
             score_sum += calc_graph_similarity(&h, &graph);
             counter += 1;
         }
-
-        eprintln!("{}", counter);
 
         let score = score_sum as f64 / counter as f64;
         if score < min_score {

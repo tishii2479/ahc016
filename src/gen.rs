@@ -9,6 +9,7 @@ pub fn create_initial_graphs(n: usize, m: usize) -> Vec<Graph> {
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す
+        // TODO: 等間隔以外を試す
         let mut graph_raw_format = vec![false; max_graph_size];
         let graph_size = max_graph_size * i / (m - 1);
 
