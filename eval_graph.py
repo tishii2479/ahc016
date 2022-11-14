@@ -16,7 +16,7 @@ def eval_graph(params):
     best_n = -1
     for line in stdout.splitlines():
         if len(line) >= 8 and line[:8].lower() == "result =":
-            best_n = int(line.split(",")[-1])
+            best_n = int(line.split(" ")[-1])
     assert best_n != -1
 
     print(f"{m}, {e}, {best_n}")
@@ -26,7 +26,7 @@ def eval_graph(params):
 def main():
     subprocess.run("cargo build --release", shell=True)
     params = []
-    for m in range(10, 101, 10):
+    for m in range(10, 31, 10):
         for e in range(0, 41, 5):
             params.append((m, e / 100))
 
@@ -38,7 +38,7 @@ def main():
 
     print(n_map)
     with open("data/n_map.txt", "w") as f:
-        f.write(n_map)
+        f.write(str(n_map))
 
 
 if __name__ == "__main__":

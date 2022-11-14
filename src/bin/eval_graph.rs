@@ -10,6 +10,7 @@ fn main() {
     const TEST_COUNT: usize = 100;
     const SOLVE_TIME_LIMIT: f64 = 3.2;
     const CONSTRUCT_TIME_LIMIT: f64 = 0.;
+    const TRIAL_COUNT: usize = 5;
 
     let args: Vec<String> = env::args().collect();
     let m = args[1].parse::<usize>().unwrap();
@@ -24,23 +25,26 @@ fn main() {
         let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
         let mut correct_count = 0;
-
         for i in 0..m {
-            let answer_graph_index = i;
-            let mut h = state.graphs[answer_graph_index].clone();
+            for _ in 0..TRIAL_COUNT {
+                let answer_graph_index = i;
+                let mut h = state.graphs[answer_graph_index].clone();
 
-            operate_toggle(&mut h, eps);
-            let time_limit = SOLVE_TIME_LIMIT as f64 / TEST_COUNT as f64;
-            let expected_graph_index = solve(&state, &h, eps, time_limit);
+                operate_toggle(&mut h, eps);
+                let time_limit = SOLVE_TIME_LIMIT as f64 / TEST_COUNT as f64;
+                let expected_graph_index = solve(&state, &h, eps, time_limit);
 
-            if answer_graph_index == expected_graph_index {
-                correct_count += 1;
+                if answer_graph_index == expected_graph_index {
+                    correct_count += 1;
+                }
             }
         }
 
-        let wrong_count = m - correct_count;
-        let score =
-            1e9 * 0.9_f64.powf(wrong_count as f64 / m as f64 * TEST_COUNT as f64) / n as f64;
+        let all_trial_count = TRIAL_COUNT * m;
+        let wrong_count = all_trial_count - correct_count;
+        let score = 1e9
+            * 0.9_f64.powf(wrong_count as f64 / all_trial_count as f64 * TEST_COUNT as f64)
+            / n as f64;
 
         if score > best_score {
             best_score = score;
