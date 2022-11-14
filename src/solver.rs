@@ -78,7 +78,7 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
             counter += 1;
         }
 
-        let score = score_sum as f64 / counter as f64;
+        let score = score_sum as f64 / (counter as f64 + 1e-10);
         if score < min_score {
             min_score = score;
             best_graph_index = i;

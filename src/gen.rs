@@ -20,7 +20,7 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
             }
             return graph_raw_format;
         };
-        // ex: 5 5 5 3 0 0
+        // ex: 5 5 5 5 0 0
         let f2 = || {
             let mut graph_raw_format = vec![false; max_graph_size];
             let mut counter = 0;
@@ -36,7 +36,7 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
             }
             graph_raw_format
         };
-        // ex: 3 3 3 3 3 3
+        // ex: 3 3 3 2 2 2
         let f3 = || {
             let mut graph_raw_format = vec![false; max_graph_size];
             let mut counter = 0;
@@ -53,6 +53,7 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
             }
             graph_raw_format
         };
+        // ex: 5 5 2 2 2 0
 
         let graph_raw_format = if eps <= 0.3 || m <= 40 {
             if i % 2 == 0 {

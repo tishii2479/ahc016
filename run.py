@@ -2,7 +2,7 @@ import multiprocessing
 import subprocess
 
 CASE = 100
-TL = 30.0
+TL = 40.0
 
 
 def execute_case(seed):
