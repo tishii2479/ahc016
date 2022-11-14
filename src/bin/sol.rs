@@ -1,4 +1,6 @@
+#[allow(unused_imports)]
 use std::fs::File;
+
 use std::io;
 use std::io::Write;
 
@@ -54,16 +56,16 @@ fn main() {
     // M, epsに対応するグラフを出力する
     let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
-    let mut log_file = File::create("data/visualizer.log").unwrap();
+    // let mut log_file = File::create("data/visualizer.log").unwrap();
 
     println!("{}", n);
-    writeln!(log_file, "{} {}", n, m).unwrap();
-    writeln!(log_file, "{}", eps).unwrap();
+    // writeln!(log_file, "{} {}", n, m).unwrap();
+    // writeln!(log_file, "{}", eps).unwrap();
 
     let g = state.format_to_string();
     for raw_g in g.split(" ") {
         println!("{}", raw_g);
-        writeln!(log_file, "{}", raw_g).unwrap();
+        // writeln!(log_file, "{}", raw_g).unwrap();
     }
     flush();
 
@@ -76,13 +78,13 @@ fn main() {
 
         // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
-        write!(log_file, "{}", raw_h).unwrap();
+        // write!(log_file, "{}", raw_h).unwrap();
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
         let best_graph_index = solve(&state, &h, eps, time_limit);
         println!("{}", best_graph_index);
-        writeln!(log_file, "{}", best_graph_index).unwrap();
+        // writeln!(log_file, "{}", best_graph_index).unwrap();
         flush();
         // eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
     }

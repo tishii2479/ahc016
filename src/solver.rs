@@ -71,6 +71,7 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
         let mut score_sum = 0;
 
         // TODO: 時間管理を効率的に
+        // TODO: 最後に平均を使って類似度を求める
         while time::elapsed_seconds() - current_time < usable_time {
             let mut graph = state.graphs[i].clone();
             operate_toggle(&mut graph, eps);
