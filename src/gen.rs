@@ -1,7 +1,87 @@
 use crate::{
     graph::{calc_graph_similarity, vertex_indicies_to_pair_index, Graph},
-    util::{rnd, time},
+    util::{generate_shuffled_permutation, rnd, time},
 };
+
+// ex: 9 9 0 0 0 0
+#[allow(unused_variables, dead_code)]
+fn f1(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    for j in 0..graph_size {
+        graph_raw_format[j] = true;
+    }
+    graph_raw_format
+}
+
+// ex: 5 5 5 5 0 0
+#[allow(unused_variables, dead_code)]
+fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 1..n {
+        for i in 0..j {
+            if counter >= graph_size {
+                break;
+            }
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+    graph_raw_format
+}
+
+// ex: 3 3 3 2 2 2
+#[allow(unused_variables, dead_code)]
+fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for d in 1..n {
+        for i in 0..n - d {
+            if counter >= graph_size {
+                break;
+            }
+            let j = i + d;
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+    graph_raw_format
+}
+
+// ex: 5 5 2 2 2 0
+#[allow(unused_variables, dead_code)]
+fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 0..max_graph_size {
+        if counter >= graph_size / 2 {
+            break;
+        }
+        graph_raw_format[j] = true;
+        counter += 1;
+    }
+    for j in 0..max_graph_size {
+        if counter >= graph_size {
+            break;
+        }
+        graph_raw_format[max_graph_size - j - 1] = true;
+        counter += 1;
+    }
+    graph_raw_format
+}
+
+// ex: 5 5 2 2 2 0
+#[allow(unused_variables, dead_code)]
+fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let p = generate_shuffled_permutation(max_graph_size);
+    for j in 0..graph_size {
+        graph_raw_format[p[j]] = true;
+    }
+    graph_raw_format
+}
 
 pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
     let mut graphs = vec![];
@@ -12,108 +92,16 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
         // TODO: 等間隔以外を試す
         let graph_size = max_graph_size * i / (m - 1);
 
-        // ex: 9 9 0 0 0 0
-        let f1 = || {
-            let mut graph_raw_format = vec![false; max_graph_size];
-            for j in 0..graph_size {
-                graph_raw_format[j] = true;
-            }
-            return graph_raw_format;
-        };
-        // ex: 5 5 5 5 0 0
-        let f2 = || {
-            let mut graph_raw_format = vec![false; max_graph_size];
-            let mut counter = 0;
-            for j in 1..n {
-                for i in 0..j {
-                    if counter >= graph_size {
-                        break;
-                    }
-                    let p = vertex_indicies_to_pair_index(n, i, j);
-                    graph_raw_format[p] = true;
-                    counter += 1;
-                }
-            }
-            graph_raw_format
-        };
-        // ex: 3 3 3 2 2 2
-        let f3 = || {
-            let mut graph_raw_format = vec![false; max_graph_size];
-            let mut counter = 0;
-            for d in 1..n {
-                for i in 0..n - d {
-                    if counter >= graph_size {
-                        break;
-                    }
-                    let j = i + d;
-                    let p = vertex_indicies_to_pair_index(n, i, j);
-                    graph_raw_format[p] = true;
-                    counter += 1;
-                }
-            }
-            graph_raw_format
-        };
-        // ex: 5 5 2 2 2 0
-        let f4 = || {
-            let mut graph_raw_format = vec![false; max_graph_size];
-            let mut counter = 0;
-            for j in 0..max_graph_size {
-                if counter >= graph_size / 2 {
-                    break;
-                }
-                graph_raw_format[j] = true;
-                counter += 1;
-            }
-            for j in 0..max_graph_size {
-                if counter >= graph_size {
-                    break;
-                }
-                graph_raw_format[max_graph_size - j - 1] = true;
-                counter += 1;
-            }
-            graph_raw_format
-        };
-        // ex: 5 5 2 2 2 0
-        let f5 = || {
-            let mut graph_raw_format = vec![false; max_graph_size];
-            let mut counter = 0;
-            for j in 0..max_graph_size {
-                if counter >= graph_size / 2 {
-                    break;
-                }
-                graph_raw_format[j] = true;
-                counter += 1;
-            }
-            for j in 0..max_graph_size {
-                if counter >= graph_size {
-                    break;
-                }
-                graph_raw_format[max_graph_size - j - 1] = true;
-                counter += 1;
-            }
-            graph_raw_format
-        };
-
-        let graph_raw_format = if eps <= 0.3 || m <= 40 {
-            if i % 3 == 0 {
-                f1()
-            } else if i % 3 == 1 {
-                f2()
-            } else {
-                f4()
-            }
+        let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
+            vec![f1, f2, f4]
         } else {
-            if i % 4 == 0 {
-                f1()
-            } else if i % 4 == 1 {
-                f2()
-            } else if i % 4 == 2 {
-                f3()
-            } else {
-                f4()
-            }
+            vec![f1, f2, f3, f4]
         };
-        graphs.push(Graph::from_vec_format(n, graph_raw_format));
+        let f = fs[i % fs.len()];
+        graphs.push(Graph::from_vec_format(
+            n,
+            f(graph_size, max_graph_size, n, m),
+        ));
     }
     return graphs;
 }
