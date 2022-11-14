@@ -73,12 +73,34 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
             }
             graph_raw_format
         };
+        // ex: 5 5 2 2 2 0
+        let f5 = || {
+            let mut graph_raw_format = vec![false; max_graph_size];
+            let mut counter = 0;
+            for j in 0..max_graph_size {
+                if counter >= graph_size / 2 {
+                    break;
+                }
+                graph_raw_format[j] = true;
+                counter += 1;
+            }
+            for j in 0..max_graph_size {
+                if counter >= graph_size {
+                    break;
+                }
+                graph_raw_format[max_graph_size - j - 1] = true;
+                counter += 1;
+            }
+            graph_raw_format
+        };
 
         let graph_raw_format = if eps <= 0.3 || m <= 40 {
-            if i % 2 == 0 {
+            if i % 3 == 0 {
                 f1()
-            } else {
+            } else if i % 3 == 1 {
                 f2()
+            } else {
+                f4()
             }
         } else {
             if i % 4 == 0 {
