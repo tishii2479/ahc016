@@ -90,12 +90,15 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す
         // TODO: 等間隔以外を試す
-        let graph_size = max_graph_size * i / (m - 1);
+        // TODO: 下駄 (n / 2) の大きさを変える
+        let graph_size = n / 2 + (max_graph_size - n) * i / (m - 1);
 
         let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
             vec![f1, f2, f4]
-        } else {
+        } else if eps >= 0.35 && m >= 70 {
             vec![f1, f2, f3, f4]
+        } else {
+            vec![f1, f2, f4, f3, f1, f2, f4]
         };
         let f = fs[i % fs.len()];
         graphs.push(Graph::from_vec_format(
