@@ -1,9 +1,11 @@
 use crate::{
-    graph::{calc_graph_similarity, vertex_indicies_to_pair_index, Graph},
-    util::{generate_shuffled_permutation, rnd, time},
+    graph::{
+        calc_degrees_similarity, calc_simulated_degrees, vertex_indicies_to_pair_index, Graph,
+    },
+    util::{rnd, time},
 };
 
-// ex: 9 9 0 0 0 0
+// ウニグラフ
 #[allow(unused_variables, dead_code)]
 fn f1(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
@@ -13,7 +15,7 @@ fn f1(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// ex: 5 5 5 5 0 0
+// 完全グラフを徐々に大きくする
 #[allow(unused_variables, dead_code)]
 fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
@@ -31,7 +33,8 @@ fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// ex: 3 3 3 2 2 2
+// なるべく均等に辺を貼る、斜め
+// TODO: ちゃんと均等にする
 #[allow(unused_variables, dead_code)]
 fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
@@ -50,7 +53,7 @@ fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// ex: 5 5 2 2 2 0
+// f1とf2の中間
 #[allow(unused_variables, dead_code)]
 fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
@@ -72,20 +75,64 @@ fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// ex: 5 5 2 2 2 0
+// なるべく均等に辺を張る
 #[allow(unused_variables, dead_code)]
 fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    // TODO: refactor
     let mut graph_raw_format = vec![false; max_graph_size];
-    let p = generate_shuffled_permutation(max_graph_size);
-    for j in 0..graph_size {
-        graph_raw_format[p[j]] = true;
+    let mut degrees = vec![0; n];
+    let mut max_degree = 0;
+    for _ in 0..graph_size {
+        let mut added = false;
+        for i in 0..n {
+            for j in i + 1..n {
+                let p = vertex_indicies_to_pair_index(n, i, j);
+                if !graph_raw_format[p] && degrees[i] < max_degree && degrees[j] < max_degree {
+                    graph_raw_format[p] = true;
+                    degrees[i] += 1;
+                    degrees[j] += 1;
+                    max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
+                    added = true;
+                    break;
+                }
+                if added {
+                    break;
+                }
+            }
+            if added {
+                break;
+            }
+        }
+        if added {
+            continue;
+        }
+        for i in 0..n {
+            for j in i + 1..n {
+                let p = vertex_indicies_to_pair_index(n, i, j);
+                if !graph_raw_format[p] {
+                    graph_raw_format[p] = true;
+                    degrees[i] += 1;
+                    degrees[j] += 1;
+                    max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
+                    added = true;
+                }
+                if added {
+                    break;
+                }
+            }
+            if added {
+                break;
+            }
+        }
     }
     graph_raw_format
 }
 
-pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
+pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
+
+    const SIMULATE_TRIAL_COUNT: usize = 100;
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す
@@ -97,16 +144,13 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
 
         let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
             vec![f1, f2, f4]
-        } else if is_extreme {
-            vec![f1, f2, f3, f4]
         } else {
-            vec![f1, f2, f4, f3, f1, f2, f4]
+            vec![f1, f2, f3, f4]
         };
         let f = fs[i % fs.len()];
-        graphs.push(Graph::from_vec_format(
-            n,
-            f(graph_size, max_graph_size, n, m),
-        ));
+        let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
+        graph.simulated_degrees = calc_simulated_degrees(&graph, eps, SIMULATE_TRIAL_COUNT);
+        graphs.push(graph);
     }
     return graphs;
 }
@@ -115,23 +159,59 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     let start_time = time::elapsed_seconds();
 
     // TODO: epsを考慮する
-    // M個のグラフを初期化する
-    let graphs = create_initial_graphs(n, m, eps);
-    let mut state = State::new(graphs);
+    let mut graphs = vec![];
+    let max_graph_size = n * (n - 1) / 2;
+    let is_extreme = eps >= 0.35 && m >= 70;
+    let border = if is_extreme { 0 } else { n };
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
+        vec![f1, f2, f4]
+    } else {
+        vec![f1, f2, f3, f4]
+    };
+
+    let mut groups = vec![];
+    for i in 0..m {
+        for f in &fs {
+            let graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
+            let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
+            graph.simulated_degrees = calc_simulated_degrees(&graph, eps, SIMULATE_TRIAL_COUNT);
+            graphs.push(graph);
+            let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
+            groups.push(group);
+        }
+    }
+
+    const SIMULATE_TRIAL_COUNT: usize = 100;
+    let mut selected = vec![];
+    for i in 0..m {
+        selected.push(i % fs.len());
+    }
+    eprintln!("{:?}", selected);
+
+    let mut state = State::new(graphs, selected, groups);
+    let mut iter_count = 0;
+    let start_temp: f64 = 100000.;
+    let end_temp: f64 = 1000.;
+    // let time_limit = 0.;
 
     // TODO: 焼きなまし
     // TODO: 時間管理を効率的に
     while time::elapsed_seconds() < start_time + time_limit {
         let current_score = state.score;
+        let progress = (time::elapsed_seconds() - start_time) / time_limit;
+        let temp = start_temp.powf(1. - progress) * end_temp.powf(progress);
 
         // 辺を付け替える
         let mut command: Command;
 
         loop {
+            let move_index = rnd::gen_range(0, m);
+            let from_graph_index = state.selected[move_index];
+            let to_graph_index = { rnd::gen_range(0, state.groups[move_index].len()) };
             command = Command::Swap {
-                graph_index: rnd::gen_range(0, m),
-                edge_index1: rnd::gen_range(0, n * (n - 1) / 2),
-                edge_index2: rnd::gen_range(0, n * (n - 1) / 2),
+                move_index,
+                from_graph_index,
+                to_graph_index,
             };
 
             if state.can_perform_command(&command) {
@@ -141,86 +221,84 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         }
 
         // グラフの距離を計算する
-        let new_score = state.score;
+        let new_score = state.calc_score();
+        let adopt = ((new_score - current_score) as f64 / temp).exp() > rnd::nextf();
 
-        if new_score > current_score {
+        if adopt {
             // 採用
+            state.score = new_score;
+            eprintln!("{}", state.score);
         } else {
             // 不採用、ロールバック
             state.reverse_command(&command);
         }
+
+        iter_count += 1;
     }
 
-    state.graphs
+    eprintln!("final_score: {}", state.score);
+    eprintln!("iter_count:  {}", iter_count);
+
+    eprintln!("{:?}", state.selected);
+
+    let mut graphs = vec![];
+    for (i, e) in state.selected.iter().enumerate() {
+        graphs.push(state.graphs[i * fs.len() + e].clone());
+    }
+    graphs
 }
 
 #[derive(Debug, Clone)]
 enum Command {
-    // 2つの辺の接続を切り替える近傍
-    // 辺の総数を不変にするため、2つの辺の接続の有無が異なる必要がある
     Swap {
-        graph_index: usize,
-        edge_index1: usize,
-        edge_index2: usize,
+        move_index: usize,
+        from_graph_index: usize,
+        to_graph_index: usize,
     },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct State {
-    pub score: i64,
+    pub score: f64,
     pub graphs: Vec<Graph>,
-    pub similarity_matrix: Vec<Vec<i64>>,
+    pub selected: Vec<usize>,
+    pub groups: Vec<Vec<usize>>,
+    pub similarity_matrix: Vec<Vec<f64>>,
 }
 
 impl State {
-    fn new(graphs: Vec<Graph>) -> State {
-        let similarity_matrix = vec![vec![0; graphs.len()]; graphs.len()];
+    fn new(graphs: Vec<Graph>, selected: Vec<usize>, groups: Vec<Vec<usize>>) -> State {
+        let similarity_matrix = vec![vec![0.; graphs.len()]; graphs.len()];
         let mut state = State {
-            score: 0,
+            score: 0.,
             graphs,
+            selected,
+            groups,
             similarity_matrix,
         };
         state.update_similarity_matrix_slow();
-        state.score = state.calc_score_slow();
+        state.score = state.calc_score();
         state
-    }
-
-    pub fn from_raw_format(n: usize, raw_format: &str) -> State {
-        let graphs = raw_format
-            .trim()
-            .split(" ")
-            .into_iter()
-            .map(|x| Graph::from_raw_format(n, x))
-            .collect();
-
-        State::new(graphs)
     }
 
     fn can_perform_command(&mut self, command: &Command) -> bool {
         match command {
             Command::Swap {
-                graph_index,
-                edge_index1,
-                edge_index2,
-            } => {
-                self.graphs[*graph_index].has_edge(*edge_index1)
-                    != self.graphs[*graph_index].has_edge(*edge_index2)
-            }
+                move_index: _,
+                from_graph_index,
+                to_graph_index,
+            } => from_graph_index != to_graph_index,
         }
     }
 
     fn perform_command(&mut self, command: &Command) {
         match command {
             Command::Swap {
-                graph_index,
-                edge_index1,
-                edge_index2,
+                move_index,
+                from_graph_index: _,
+                to_graph_index,
             } => {
-                self.graphs[*graph_index].toggle_edge(*edge_index1);
-                self.graphs[*graph_index].toggle_edge(*edge_index2);
-                let score_diff = self.update_similarity_matrix(*graph_index);
-
-                self.score += score_diff;
+                self.selected[*move_index] = *to_graph_index;
             }
         }
     }
@@ -228,57 +306,45 @@ impl State {
     fn reverse_command(&mut self, command: &Command) {
         match command {
             Command::Swap {
-                graph_index: _,
-                edge_index1: _,
-                edge_index2: _,
+                move_index,
+                from_graph_index,
+                to_graph_index: _,
             } => {
-                self.perform_command(command);
+                self.selected[*move_index] = *from_graph_index;
             }
         }
-    }
-
-    fn update_similarity_matrix(&mut self, updated_graph_index: usize) -> i64 {
-        // TODO: 全てのグラフと試すのではなく、何個かサンプリングする
-        let mut score_diff = 0;
-        for j in 0..self.graphs.len() {
-            if updated_graph_index == j {
-                continue;
-            }
-            let similarity =
-                calc_graph_similarity(&self.graphs[updated_graph_index], &self.graphs[j]);
-
-            score_diff += 2 * (similarity - self.similarity_matrix[updated_graph_index][j]);
-
-            self.similarity_matrix[updated_graph_index][j] = similarity;
-            self.similarity_matrix[j][updated_graph_index] = similarity;
-        }
-        score_diff
     }
 
     fn update_similarity_matrix_slow(&mut self) {
         for i in 0..self.graphs.len() {
             for j in 0..self.graphs.len() {
                 if i == j {
-                    self.similarity_matrix[i][j] = 0;
+                    self.similarity_matrix[i][j] = 0.;
                 } else {
-                    self.similarity_matrix[i][j] =
-                        calc_graph_similarity(&self.graphs[i], &self.graphs[j]);
+                    self.similarity_matrix[i][j] = calc_degrees_similarity(
+                        &self.graphs[i].simulated_degrees,
+                        &self.graphs[j].simulated_degrees,
+                    );
                 }
             }
         }
     }
 
-    fn calc_score_slow(&self) -> i64 {
+    fn calc_score(&self) -> f64 {
         // 各グラフ間の距離の総和
         // 大きいほどよい
-        let mut score = 0;
-        for i in 0..self.graphs.len() {
-            for j in 0..self.graphs.len() {
+        let mut score = 0.;
+        for (i, ie) in self.selected.iter().enumerate() {
+            let mut min_dist = 1e10;
+            for (j, je) in self.selected.iter().enumerate() {
                 if i == j {
                     continue;
                 }
-                score += self.similarity_matrix[i][j];
+                let i_idx = self.groups[i][*ie];
+                let j_idx = self.groups[j][*je];
+                min_dist = f64::min(min_dist, self.similarity_matrix[i_idx][j_idx]);
             }
+            score += min_dist;
         }
         score
     }
@@ -289,60 +355,49 @@ impl State {
             .map(|g| g.to_raw_format() + " ")
             .collect()
     }
-
-    pub fn dump_similarity(&self) {
-        for i in 0..self.graphs.len() {
-            for j in 0..self.graphs.len() {
-                let similarity = calc_graph_similarity(&self.graphs[i], &self.graphs[j]);
-                eprint!("{:4} ", similarity);
-            }
-            eprintln!();
-        }
-        eprintln!();
-    }
 }
 
-#[test]
-fn test_perform_reverse_swap_command() {
-    let n = 5;
-    let m = 5;
-    let eps = 0.1;
-    let graphs = create_initial_graphs(n, m, eps);
-    let mut state = State::new(graphs);
+// #[test]
+// fn test_perform_reverse_swap_command() {
+//     let n = 5;
+//     let m = 10;
+//     let eps = 0.1;
+//     let graphs = create_optimal_graphs(n, m, eps, 1.);
+//     let graph_count = graphs.len();
+//     let selected = vec![0, 1, 2, 3, 4];
+//     let mut state = State::new(graphs, selected);
 
-    let mut commands = vec![];
+//     let mut commands = vec![];
 
-    let copied_state = state.clone();
-    let mut copied_state_greedy = state.clone();
+//     let copied_state = state.clone();
 
-    for _ in 0..20 {
-        let graph_index = rnd::gen_range(0, m);
-        let edge_index1 = rnd::gen_range(0, n * (n - 1) / 2);
-        let edge_index2 = rnd::gen_range(0, n * (n - 1) / 2);
-        let command = Command::Swap {
-            graph_index,
-            edge_index1,
-            edge_index2,
-        };
+//     for _ in 0..20 {
+//         let move_index = rnd::gen_range(0, m);
+//         let from_graph_index = state.selected[move_index];
+//         let to_graph_index = {
+//             if (from_graph_index == graph_count - 1) || (from_graph_index > 0 && rnd::nextf() < 0.5)
+//             {
+//                 from_graph_index - 1
+//             } else {
+//                 from_graph_index + 1
+//             }
+//         };
+//         let command = Command::Swap {
+//             move_index,
+//             from_graph_index,
+//             to_graph_index,
+//         };
 
-        if state.can_perform_command(&command) {
-            state.perform_command(&command);
-            commands.push(command);
+//         if state.can_perform_command(&command) {
+//             state.perform_command(&command);
+//             commands.push(command);
+//         }
+//         assert_eq!(state.score, state.calc_score());
+//     }
 
-            copied_state_greedy.graphs[graph_index].toggle_edge(edge_index1);
-            copied_state_greedy.graphs[graph_index].toggle_edge(edge_index2);
-        }
-        assert_eq!(state.score, state.calc_score_slow());
-    }
+//     for command in commands.into_iter().rev() {
+//         state.reverse_command(&command);
+//     }
 
-    copied_state_greedy.update_similarity_matrix_slow();
-    copied_state_greedy.score = copied_state_greedy.calc_score_slow();
-
-    assert_eq!(state, copied_state_greedy);
-
-    for command in commands.into_iter().rev() {
-        state.reverse_command(&command);
-    }
-
-    assert_eq!(state, copied_state);
-}
+//     assert_eq!(state.score, copied_state.score);
+// }

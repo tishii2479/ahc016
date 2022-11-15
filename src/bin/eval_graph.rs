@@ -8,7 +8,7 @@ fn main() {
     const N_RANGE: RangeInclusive<usize> = 10..=100;
 
     const TEST_COUNT: usize = 100;
-    const SOLVE_TIME_LIMIT: f64 = 3.2;
+    // const SOLVE_TIME_LIMIT: f64 = 3.2;
     const CONSTRUCT_TIME_LIMIT: f64 = 0.;
     const TRIAL_COUNT: usize = 5;
 
@@ -31,8 +31,7 @@ fn main() {
                 let mut h = graphs[answer_graph_index].clone();
 
                 operate_toggle(&mut h, eps);
-                let time_limit = SOLVE_TIME_LIMIT as f64 / TEST_COUNT as f64;
-                let expected_graph_index = solve(&graphs, &h, eps, time_limit);
+                let expected_graph_index = solve(&graphs, &h, eps);
 
                 if answer_graph_index == expected_graph_index {
                     correct_count += 1;

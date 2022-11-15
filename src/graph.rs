@@ -2,12 +2,15 @@ use std::{fs::File, io::Write};
 
 use crate::util::{generate_shuffled_permutation, rnd, Dsu};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Graph {
     pub n: usize,
-    degrees: Vec<usize>,
+    pub edge_count: usize,
+    pub degrees: Vec<usize>,
+    pub simulated_degrees: Vec<f64>,
     // TODO: BitSetにかえる
     edges: Vec<bool>,
+    // TODO: 取り除く
     pairs: Vec<(usize, usize)>,
 }
 
@@ -18,21 +21,26 @@ impl Graph {
         let mut pairs = vec![(0, 0); edges.len()];
 
         let mut it = 0;
+        let mut edge_count = 0;
 
         for i in 0..n {
             for j in i + 1..n {
                 if edges[it] {
                     degrees[i] += 1;
                     degrees[j] += 1;
+                    edge_count += 1;
                 }
                 pairs[it] = (i, j);
                 it += 1;
             }
         }
+        let sim_degrees = degrees.iter().map(|x| *x as f64).collect();
 
         Graph {
             n,
+            edge_count,
             degrees,
+            simulated_degrees: sim_degrees,
             edges,
             pairs,
         }
@@ -96,6 +104,23 @@ impl Graph {
     }
 }
 
+pub fn calc_simulated_degrees(graph: &Graph, eps: f64, trial: usize) -> Vec<f64> {
+    let mut simulated_degrees = vec![0.; graph.n];
+    for _ in 0..trial {
+        let mut sim_graph = graph.clone();
+        operate_toggle(&mut sim_graph, eps);
+        let mut degrees = sim_graph.degrees.clone();
+        degrees.sort();
+        for i in 0..graph.n {
+            simulated_degrees[i] += degrees[i] as f64;
+        }
+    }
+    for i in 0..graph.n {
+        simulated_degrees[i] /= trial as f64;
+    }
+    simulated_degrees
+}
+
 // epsの確率でgraphを変化させる
 pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     // TODO: maskに変えて、xorをとる
@@ -149,19 +174,14 @@ fn calc_degrees_hist_similarity(a: &Graph, b: &Graph) -> i64 {
 }
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
-fn calc_degrees_similarity(a: &Graph, b: &Graph) -> i64 {
+pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
     // TODO: degreesの管理を止める
-    let mut a_degrees = a.degrees.clone();
-    let mut b_degrees = b.degrees.clone();
-    a_degrees.sort();
-    b_degrees.sort();
+    debug_assert_eq!(a.len(), b.len());
 
-    debug_assert_eq!(a.n, b.n);
+    let mut score = 0.;
 
-    let mut score = 0;
-
-    for i in 0..a.n {
-        let d = a_degrees[i] as i64 - b_degrees[i] as i64;
+    for i in 0..a.len() {
+        let d = a[i] - b[i];
         score += d * d;
     }
 
@@ -185,11 +205,6 @@ fn calc_connected_size_similarity(a: &Graph, b: &Graph) -> i64 {
     score
 }
 
-// グラフの類似度を返す関数
-pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> i64 {
-    calc_degrees_similarity(&a, &b)
-}
-
 // グラフを同じ形にするために必要な操作回数を類似度とした時の、類似度を返す関数
 // 山登りによって頂点の対応付けを行い、最適化された時の必要な操作回数
 pub fn calc_graph_similarity_with_sa(
@@ -208,7 +223,6 @@ pub fn calc_graph_similarity_with_sa(
     let mut current_score = 1e10 as i64;
     let mut scores = vec![];
 
-    // TODO: 焼きなまし
     for iter in 0..iter_count {
         let progress = iter as f64 / iter_count as f64;
         let temp = start_temp.powf(1. - progress) * end_temp.powf(progress);

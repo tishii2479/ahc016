@@ -29,8 +29,8 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 0.;
-    const TIME_LIMIT: f64 = 4.8;
+    const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
+    // const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
     let stdout = io::stdout();
@@ -54,7 +54,7 @@ fn main() {
     eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 
     // M, epsに対応するグラフを出力する
-    let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
+    let graphs = create_optimal_graphs2(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
     // let mut log_file = File::create("data/visualizer.log").unwrap();
 
@@ -71,17 +71,14 @@ fn main() {
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     // 各クエリを処理する
-    for q in 0..QUERY_COUNT {
-        let remaining_time = TIME_LIMIT - time::elapsed_seconds();
-        let time_limit: f64 = remaining_time / (QUERY_COUNT - q) as f64;
-
+    for _ in 0..QUERY_COUNT {
         // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
         // write!(log_file, "{}", raw_h).unwrap();
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
-        let best_graph_index = solve(&graphs, &h, eps, time_limit);
+        let best_graph_index = solve(&graphs, &h, eps);
         println!("{}", best_graph_index);
         // writeln!(log_file, "{}", best_graph_index).unwrap();
         flush();

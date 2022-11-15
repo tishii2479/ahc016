@@ -1,14 +1,8 @@
 use std::ops::RangeInclusive;
 
-use crate::{
-    graph::{calc_graph_similarity, operate_toggle, Graph},
-    util::time,
-};
+use crate::graph::{calc_degrees_similarity, Graph};
 
-// TODO: 次数列だけを使うなら、シミュレーション後の次数列を使い回す
-pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64, time_limit: f64) -> usize {
-    let start_time = time::elapsed_seconds();
-
+pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
     let n = h.n;
     let h_edge_count = h.calc_edge_count();
     let max_edge_count = n * (n - 1) / 2;
@@ -16,7 +10,6 @@ pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64, time_limit: f64) -> usize
     let mut candidate_graph_count: usize = 0;
 
     let expected_graph_edge_count = |edge_count: usize| {
-        //
         (edge_count as f64 * (1. - 2. * eps) + max_edge_count as f64 * eps) as usize
     };
 
@@ -52,31 +45,12 @@ pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64, time_limit: f64) -> usize
     let mut best_graph_index = 0;
     let mut min_score = 1e10;
 
+    let mut h_degrees = h.degrees.clone();
+    h_degrees.sort();
+    let h_degrees = h_degrees.iter().map(|x| *x as f64).collect();
+
     for i in 0..graphs.len() {
-        let is_occurable =
-            edge_count_range.contains(&expected_graph_edge_count(graphs[i].calc_edge_count()));
-        if !is_occurable {
-            continue;
-        }
-
-        // モンテカルロ法
-        // `TRIAL_COUNT`回ランダムにグラフに操作をして、その結果のグラフとhの類似度の平均を使う
-        let current_time = time::elapsed_seconds();
-        let usable_time = (start_time + time_limit - current_time) / candidate_graph_count as f64;
-
-        let mut counter = 0;
-        let mut score_sum = 0;
-
-        // TODO: 時間管理を効率的に
-        // TODO: 最後に平均を使って類似度を求める
-        while time::elapsed_seconds() - current_time < usable_time {
-            let mut graph = graphs[i].clone();
-            operate_toggle(&mut graph, eps);
-            score_sum += calc_graph_similarity(&h, &graph);
-            counter += 1;
-        }
-
-        let score = score_sum as f64 / (counter as f64 + 1e-10);
+        let score = calc_degrees_similarity(&h_degrees, &graphs[i].simulated_degrees);
         if score < min_score {
             min_score = score;
             best_graph_index = i;
