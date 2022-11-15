@@ -1,13 +1,12 @@
 use std::ops::RangeInclusive;
 
 use crate::{
-    gen::State,
     graph::{calc_graph_similarity, operate_toggle, Graph},
     util::time,
 };
 
 // TODO: 次数列だけを使うなら、シミュレーション後の次数列を使い回す
-pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
+pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let start_time = time::elapsed_seconds();
 
     let n = h.n;
@@ -36,10 +35,9 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
 
         edge_count_range = min_edge_count..=max_edge_count;
 
-        for i in 0..state.graphs.len() {
-            let is_occurable = edge_count_range.contains(&expected_graph_edge_count(
-                state.graphs[i].calc_edge_count(),
-            ));
+        for i in 0..graphs.len() {
+            let is_occurable =
+                edge_count_range.contains(&expected_graph_edge_count(graphs[i].calc_edge_count()));
             if is_occurable {
                 candidate_graph_count += 1;
             }
@@ -54,10 +52,9 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
     let mut best_graph_index = 0;
     let mut min_score = 1e10;
 
-    for i in 0..state.graphs.len() {
-        let is_occurable = edge_count_range.contains(&expected_graph_edge_count(
-            state.graphs[i].calc_edge_count(),
-        ));
+    for i in 0..graphs.len() {
+        let is_occurable =
+            edge_count_range.contains(&expected_graph_edge_count(graphs[i].calc_edge_count()));
         if !is_occurable {
             continue;
         }
@@ -73,7 +70,7 @@ pub fn solve(state: &State, h: &Graph, eps: f64, time_limit: f64) -> usize {
         // TODO: 時間管理を効率的に
         // TODO: 最後に平均を使って類似度を求める
         while time::elapsed_seconds() - current_time < usable_time {
-            let mut graph = state.graphs[i].clone();
+            let mut graph = graphs[i].clone();
             operate_toggle(&mut graph, eps);
             score_sum += calc_graph_similarity(&h, &graph);
             counter += 1;

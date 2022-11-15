@@ -54,7 +54,7 @@ fn main() {
     eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 
     // M, epsに対応するグラフを出力する
-    let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
+    let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
     // let mut log_file = File::create("data/visualizer.log").unwrap();
 
@@ -62,9 +62,8 @@ fn main() {
     // writeln!(log_file, "{} {}", n, m).unwrap();
     // writeln!(log_file, "{}", eps).unwrap();
 
-    let g = state.format_to_string();
-    for raw_g in g.split(" ") {
-        println!("{}", raw_g);
+    for graph in &graphs {
+        println!("{}", graph.to_raw_format());
         // writeln!(log_file, "{}", raw_g).unwrap();
     }
     flush();
@@ -82,7 +81,7 @@ fn main() {
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
-        let best_graph_index = solve(&state, &h, eps, time_limit);
+        let best_graph_index = solve(&graphs, &h, eps, time_limit);
         println!("{}", best_graph_index);
         // writeln!(log_file, "{}", best_graph_index).unwrap();
         flush();

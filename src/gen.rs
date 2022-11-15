@@ -111,7 +111,7 @@ pub fn create_initial_graphs(n: usize, m: usize, eps: f64) -> Vec<Graph> {
     return graphs;
 }
 
-pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> State {
+pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
 
     // TODO: epsを考慮する
@@ -151,7 +151,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> S
         }
     }
 
-    state
+    state.graphs
 }
 
 #[derive(Debug, Clone)]

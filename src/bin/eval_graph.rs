@@ -22,17 +22,17 @@ fn main() {
 
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     for n in N_RANGE.step_by(10) {
-        let state = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
+        let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
         let mut correct_count = 0;
         for i in 0..m {
             for _ in 0..TRIAL_COUNT {
                 let answer_graph_index = i;
-                let mut h = state.graphs[answer_graph_index].clone();
+                let mut h = graphs[answer_graph_index].clone();
 
                 operate_toggle(&mut h, eps);
                 let time_limit = SOLVE_TIME_LIMIT as f64 / TEST_COUNT as f64;
-                let expected_graph_index = solve(&state, &h, eps, time_limit);
+                let expected_graph_index = solve(&graphs, &h, eps, time_limit);
 
                 if answer_graph_index == expected_graph_index {
                     correct_count += 1;

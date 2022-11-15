@@ -29,9 +29,11 @@ fn main() {
 
     for n in N_RANGE.step_by(10) {
         // グラフを作成して出力する
-        let state = create_optimal_graphs(n, m, eps, TIME_LIMIT);
+        let graphs = create_optimal_graphs(n, m, eps, TIME_LIMIT);
         let file_path = format!("data/graphs/{m}_{e}/{n}.txt");
         let mut file = File::create(file_path).unwrap();
-        write!(file, "{}", state.format_to_string().trim()).unwrap();
+        for graph in &graphs {
+            write!(file, "{}", graph.to_raw_format().trim()).unwrap();
+        }
     }
 }
