@@ -78,12 +78,12 @@ fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
 // なるべく均等に辺を張る
 #[allow(unused_variables, dead_code)]
 fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    // TODO: refactor
     let mut graph_raw_format = vec![false; max_graph_size];
     let mut degrees = vec![0; n];
     let mut max_degree = 0;
-    for _ in 0..graph_size {
-        let mut added = false;
+
+    // TODO: 高速化
+    let mut op = || {
         for i in 0..n {
             for j in i + 1..n {
                 let p = vertex_indicies_to_pair_index(n, i, j);
@@ -92,19 +92,9 @@ fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
                     degrees[i] += 1;
                     degrees[j] += 1;
                     max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
-                    added = true;
-                    break;
-                }
-                if added {
-                    break;
+                    return;
                 }
             }
-            if added {
-                break;
-            }
-        }
-        if added {
-            continue;
         }
         for i in 0..n {
             for j in i + 1..n {
@@ -114,21 +104,19 @@ fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
                     degrees[i] += 1;
                     degrees[j] += 1;
                     max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
-                    added = true;
+                    return;
                 }
-                if added {
-                    break;
-                }
-            }
-            if added {
-                break;
             }
         }
+    };
+
+    for _ in 0..graph_size {
+        op();
     }
     graph_raw_format
 }
 
-pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
+pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
@@ -155,7 +143,7 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, _time_limit: f64) ->
     return graphs;
 }
 
-pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
+pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
 
     // TODO: epsを考慮する
