@@ -6,6 +6,7 @@ use std::io::Write;
 
 use ahc016::gen::*;
 use ahc016::graph::*;
+use ahc016::param::BEST_N;
 use ahc016::solver::solve;
 use ahc016::util::time;
 
@@ -38,18 +39,7 @@ fn main() {
 
     let (m, eps) = read_input(&stdin);
 
-    // TODO: 最適なNを埋め込む
-    let n = if eps == 0. {
-        10
-    } else if eps <= 0.05 {
-        30
-    } else if eps <= 0.13 {
-        40
-    } else if m <= 40 && eps <= 0.30 {
-        50
-    } else {
-        100
-    };
+    let n = BEST_N[m - 10][(eps * 100.) as usize];
 
     eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 

@@ -1,16 +1,16 @@
 use std::{env, ops::RangeInclusive};
 
-use ahc016::{gen::create_optimal_graphs, graph::operate_toggle, solver::solve};
+use ahc016::{gen::create_optimal_graphs_greedy, graph::operate_toggle, solver::solve};
 
 // 各M, epsについて、最適なNを探し、そのグラフを出力する
 fn main() {
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
-    const N_RANGE: RangeInclusive<usize> = 10..=100;
+    const N_RANGE: RangeInclusive<usize> = 4..=100;
 
     const TEST_COUNT: usize = 100;
     // const SOLVE_TIME_LIMIT: f64 = 3.2;
     const CONSTRUCT_TIME_LIMIT: f64 = 0.;
-    const TRIAL_COUNT: usize = 5;
+    const TRIAL_COUNT: usize = 20;
 
     let args: Vec<String> = env::args().collect();
     let m = args[1].parse::<usize>().unwrap();
@@ -21,8 +21,9 @@ fn main() {
     let e = ((eps * 100.) as i64).to_string();
 
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
-    for n in N_RANGE.step_by(10) {
-        let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
+    // TODO: 試すNは、小さいのは全て試した方が良い
+    for n in N_RANGE.step_by(2) {
+        let graphs = create_optimal_graphs_greedy(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
         let mut correct_count = 0;
         for i in 0..m {

@@ -328,7 +328,7 @@ fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
 
     // TODO: 高速化
     for _ in 0..graph_size {
-        let mut best_score = usize::MAX;
+        let mut best_score = 1000000;
         let mut best_vs = (0, 0);
         for i in 0..n {
             for j in i + 1..n {

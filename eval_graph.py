@@ -26,8 +26,8 @@ def eval_graph(params):
 def main():
     subprocess.run("cargo build --release", shell=True)
     params = []
-    for m in range(10, 31, 10):
-        for e in range(0, 41, 5):
+    for m in range(10, 101):
+        for e in range(0, 41):
             params.append((m, e / 100))
 
     n_map = {}
