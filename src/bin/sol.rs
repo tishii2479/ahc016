@@ -41,7 +41,7 @@ fn main() {
     // TODO: 最適なNを埋め込む
     let n = if eps == 0. {
         10
-    } else if eps <= 0.05 {
+    } else if eps <= 0.05 && m <= 80 {
         30
     } else if eps <= 0.13 {
         40
