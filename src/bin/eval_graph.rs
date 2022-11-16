@@ -18,7 +18,7 @@ fn main() {
 
     let mut best_n = 0;
     let mut best_score = 0.;
-    let e = ((eps * 100.) as i64).to_string();
+    let e = ((eps * 100.).round() as i64).to_string();
 
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     // TODO: 試すNは、小さいのは全て試した方が良い

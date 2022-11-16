@@ -39,7 +39,7 @@ fn main() {
 
     let (m, eps) = read_input(&stdin);
 
-    let n = BEST_N[m - 10][(eps * 100.) as usize];
+    let n = BEST_N[m - 10][(eps * 100.).round() as usize];
 
     eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 
