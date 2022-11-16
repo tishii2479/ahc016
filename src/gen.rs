@@ -67,8 +67,8 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
 
     let mut state = State::new(graphs, selected, groups);
     let mut iter_count = 0;
-    let start_temp: f64 = 5.;
-    let end_temp: f64 = 0.1;
+    let start_temp: f64 = state.score / 10.;
+    let end_temp: f64 = state.score / 1000.;
     // let time_limit = 0.;
 
     eprintln!("start_score: {}", state.score);
@@ -211,6 +211,7 @@ impl State {
     }
 
     fn calc_score(&self) -> f64 {
+        const CONSIDER_RANGE: usize = 10;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
@@ -228,7 +229,7 @@ impl State {
         }
         min_dists.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mut score = 0.;
-        for i in 0..10 {
+        for i in 0..CONSIDER_RANGE {
             score += min_dists[i];
         }
         score

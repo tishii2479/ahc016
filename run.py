@@ -1,7 +1,7 @@
 import multiprocessing
 import subprocess
 
-CASE = 100
+CASE = 1000
 TL = 40.0
 
 
@@ -71,7 +71,7 @@ def main():
 
     print(f"err ave: {err_count / CASE}")
 
-    M_div = list(range(10, 101, 30))
+    M_div = list(range(10, 101, 10))
     eps_div = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
 
     def is_in(v, low, high):
