@@ -5,117 +5,6 @@ use crate::{
     util::{rnd, time},
 };
 
-// ウニグラフ
-#[allow(unused_variables, dead_code)]
-fn f1(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    for j in 0..graph_size {
-        graph_raw_format[j] = true;
-    }
-    graph_raw_format
-}
-
-// 完全グラフを徐々に大きくする
-#[allow(unused_variables, dead_code)]
-fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for j in 1..n {
-        for i in 0..j {
-            if counter >= graph_size {
-                break;
-            }
-            let p = vertex_indicies_to_pair_index(n, i, j);
-            graph_raw_format[p] = true;
-            counter += 1;
-        }
-    }
-    graph_raw_format
-}
-
-// なるべく均等に辺を貼る、斜め
-// TODO: ちゃんと均等にする
-#[allow(unused_variables, dead_code)]
-fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for d in 1..n {
-        for i in 0..n - d {
-            if counter >= graph_size {
-                break;
-            }
-            let j = i + d;
-            let p = vertex_indicies_to_pair_index(n, i, j);
-            graph_raw_format[p] = true;
-            counter += 1;
-        }
-    }
-    graph_raw_format
-}
-
-// f1とf2の中間
-#[allow(unused_variables, dead_code)]
-fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for j in 0..max_graph_size {
-        if counter >= graph_size / 2 {
-            break;
-        }
-        graph_raw_format[j] = true;
-        counter += 1;
-    }
-    for j in 0..max_graph_size {
-        if counter >= graph_size {
-            break;
-        }
-        graph_raw_format[max_graph_size - j - 1] = true;
-        counter += 1;
-    }
-    graph_raw_format
-}
-
-// なるべく均等に辺を張る
-#[allow(unused_variables, dead_code)]
-fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut degrees = vec![0; n];
-    let mut max_degree = 0;
-
-    // TODO: 高速化
-    let mut op = || {
-        for i in 0..n {
-            for j in i + 1..n {
-                let p = vertex_indicies_to_pair_index(n, i, j);
-                if !graph_raw_format[p] && degrees[i] < max_degree && degrees[j] < max_degree {
-                    graph_raw_format[p] = true;
-                    degrees[i] += 1;
-                    degrees[j] += 1;
-                    max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
-                    return;
-                }
-            }
-        }
-        for i in 0..n {
-            for j in i + 1..n {
-                let p = vertex_indicies_to_pair_index(n, i, j);
-                if !graph_raw_format[p] {
-                    graph_raw_format[p] = true;
-                    degrees[i] += 1;
-                    degrees[j] += 1;
-                    max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
-                    return;
-                }
-            }
-        }
-    };
-
-    for _ in 0..graph_size {
-        op();
-    }
-    graph_raw_format
-}
-
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
@@ -343,6 +232,110 @@ impl State {
             .map(|g| g.to_raw_format() + " ")
             .collect()
     }
+}
+
+// ウニグラフ
+#[allow(unused_variables, dead_code)]
+fn f1(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    for j in 0..graph_size {
+        graph_raw_format[j] = true;
+    }
+    graph_raw_format
+}
+
+// 完全グラフを徐々に大きくする
+#[allow(unused_variables, dead_code)]
+fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 1..n {
+        for i in 0..j {
+            if counter >= graph_size {
+                break;
+            }
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+    graph_raw_format
+}
+
+// なるべく均等に辺を貼る、斜め
+// TODO: ちゃんと均等にする
+#[allow(unused_variables, dead_code)]
+fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for d in 1..n {
+        for i in 0..n - d {
+            if counter >= graph_size {
+                break;
+            }
+            let j = i + d;
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+    graph_raw_format
+}
+
+// f1とf2の中間
+#[allow(unused_variables, dead_code)]
+fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 0..max_graph_size {
+        if counter >= graph_size / 2 {
+            break;
+        }
+        graph_raw_format[j] = true;
+        counter += 1;
+    }
+    for j in 0..max_graph_size {
+        if counter >= graph_size {
+            break;
+        }
+        graph_raw_format[max_graph_size - j - 1] = true;
+        counter += 1;
+    }
+    graph_raw_format
+}
+
+// なるべく均等に辺を張る
+#[allow(unused_variables, dead_code)]
+fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut degrees = vec![0; n];
+    let mut max_degree = 0;
+
+    // TODO: 高速化
+    for _ in 0..graph_size {
+        let mut best_score = usize::MAX;
+        let mut best_vs = (0, 0);
+        for i in 0..n {
+            for j in i + 1..n {
+                let p = vertex_indicies_to_pair_index(n, i, j);
+                if graph_raw_format[p] {
+                    continue;
+                }
+                let score = degrees[i] + degrees[j];
+                if score < best_score {
+                    best_score = score;
+                    best_vs = (i, j);
+                }
+            }
+        }
+        let (i, j) = best_vs;
+        let p = vertex_indicies_to_pair_index(n, i, j);
+        graph_raw_format[p] = true;
+        degrees[i] += 1;
+        degrees[j] += 1;
+        max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
+    }
+    graph_raw_format
 }
 
 // #[test]
