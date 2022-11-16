@@ -53,9 +53,9 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
             let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
             graph.simulated_degrees = calc_simulated_degrees(&graph, eps, SIMULATE_TRIAL_COUNT);
             graphs.push(graph);
-            let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
-            groups.push(group);
         }
+        let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
+        groups.push(group);
     }
 
     const SIMULATE_TRIAL_COUNT: usize = 100;
@@ -67,9 +67,11 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
 
     let mut state = State::new(graphs, selected, groups);
     let mut iter_count = 0;
-    let start_temp: f64 = 100000.;
-    let end_temp: f64 = 1000.;
+    let start_temp: f64 = 5.;
+    let end_temp: f64 = 0.1;
     // let time_limit = 0.;
+
+    eprintln!("start_score: {}", state.score);
 
     // TODO: 焼きなまし
     // TODO: 時間管理を効率的に
@@ -104,7 +106,7 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
         if adopt {
             // 採用
             state.score = new_score;
-            eprintln!("{}", state.score);
+            // eprintln!("{}", state.score);
         } else {
             // 不採用、ロールバック
             state.reverse_command(&command);
@@ -120,7 +122,8 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
 
     let mut graphs = vec![];
     for (i, e) in state.selected.iter().enumerate() {
-        graphs.push(state.graphs[i * fs.len() + e].clone());
+        // eprintln!("{} {}", state.groups[i][*e], e);
+        graphs.push(state.graphs[state.groups[i][*e]].clone());
     }
     graphs
 }
@@ -210,18 +213,23 @@ impl State {
     fn calc_score(&self) -> f64 {
         // 各グラフ間の距離の総和
         // 大きいほどよい
-        let mut score = 0.;
+        let mut min_dists = vec![];
         for (i, ie) in self.selected.iter().enumerate() {
             let mut min_dist = 1e10;
+            let i_idx = self.groups[i][*ie];
             for (j, je) in self.selected.iter().enumerate() {
                 if i == j {
                     continue;
                 }
-                let i_idx = self.groups[i][*ie];
                 let j_idx = self.groups[j][*je];
                 min_dist = f64::min(min_dist, self.similarity_matrix[i_idx][j_idx]);
             }
-            score += min_dist;
+            min_dists.push(min_dist);
+        }
+        min_dists.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        let mut score = 0.;
+        for i in 0..10 {
+            score += min_dists[i];
         }
         score
     }
