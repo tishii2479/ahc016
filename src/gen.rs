@@ -5,7 +5,7 @@ use crate::{
     util::{rnd, time},
 };
 
-pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
+pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f64) -> Vec<Graph> {
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
@@ -32,7 +32,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, _time_limit: f64) -> 
     return graphs;
 }
 
-pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
+pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
 
     // TODO: epsを考慮する
@@ -63,15 +63,14 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
     for i in 0..m {
         selected.push(i % fs.len());
     }
-    eprintln!("{:?}", selected);
 
-    let mut state = State::new(graphs, selected, groups);
+    let mut state = State::new(graphs, selected.clone(), groups);
     let mut iter_count = 0;
     let start_temp: f64 = state.score / 10.;
     let end_temp: f64 = state.score / 1000.;
     // let time_limit = 0.;
 
-    eprintln!("start_score: {}", state.score);
+    let start_score = state.score;
 
     // TODO: 焼きなまし
     // TODO: 時間管理を効率的に
@@ -115,14 +114,21 @@ pub fn create_optimal_graphs2(n: usize, m: usize, eps: f64, time_limit: f64) -> 
         iter_count += 1;
     }
 
-    eprintln!("final_score: {}", state.score);
-    eprintln!("iter_count:  {}", iter_count);
+    eprintln!("start_score:    {}", start_score);
+    eprintln!("final_score:    {}", state.score);
+    eprintln!("iter_count:     {}", iter_count);
+    eprintln!("final selected: {:?}", state.selected);
 
-    eprintln!("{:?}", state.selected);
+    if start_score > state.score {
+        eprintln!(
+            "became worse: {} -> {}, {} {}",
+            start_score, state.score, m, eps
+        );
+        state.selected = selected;
+    }
 
     let mut graphs = vec![];
     for (i, e) in state.selected.iter().enumerate() {
-        // eprintln!("{} {}", state.groups[i][*e], e);
         graphs.push(state.graphs[state.groups[i][*e]].clone());
     }
     graphs

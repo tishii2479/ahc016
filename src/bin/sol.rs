@@ -41,7 +41,7 @@ fn main() {
     // TODO: 最適なNを埋め込む
     let n = if eps == 0. {
         10
-    } else if eps <= 0.05 && m <= 80 {
+    } else if eps <= 0.05 {
         30
     } else if eps <= 0.13 {
         40
@@ -54,7 +54,7 @@ fn main() {
     eprintln!("M = {}, eps = {}, N = {}", m, eps, n);
 
     // M, epsに対応するグラフを出力する
-    let graphs = create_optimal_graphs2(n, m, eps, CONSTRUCT_TIME_LIMIT);
+    let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
     // let mut log_file = File::create("data/visualizer.log").unwrap();
 
