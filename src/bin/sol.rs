@@ -66,4 +66,6 @@ fn main() {
     }
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
+
+    assert!(time::elapsed_seconds() <= 4.95);
 }

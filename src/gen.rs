@@ -1,3 +1,6 @@
+#[allow(unused_imports)]
+use std::{fs::File, io::Write};
+
 use crate::{
     graph::{
         calc_degrees_similarity, calc_simulated_degrees, vertex_indicies_to_pair_index, Graph,
@@ -9,7 +12,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
-    const SIMULATE_TRIAL_COUNT: usize = 100;
+    const SIMULATE_TRIAL_COUNT: usize = 20;
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す
@@ -17,7 +20,8 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
         // TODO: 下駄 の大きさを変える
         let is_extreme = eps >= 0.35 && m >= 70;
         let border = if is_extreme { 0 } else { n };
-        let graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
+        let edge_width = max_graph_size - border;
+        let graph_size = border / 2 + edge_width * i / (m - 1);
 
         let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
             vec![f1, f2, f4]
@@ -42,12 +46,13 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     let max_graph_size = n * (n - 1) / 2;
     let is_extreme = eps >= 0.35 && m >= 70;
     let border = if is_extreme { 0 } else { n };
+    let edge_width = max_graph_size - border;
     let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f3, f4];
 
     let mut groups = vec![vec![]; m];
     for i in 0..m {
         for f in &fs {
-            let graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
+            let graph_size = border / 2 + edge_width * i / (m - 1);
             let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
             graph.simulated_degrees = calc_simulated_degrees(&graph, eps, SIMULATE_TRIAL_COUNT);
             graphs.push(graph);
@@ -57,12 +62,14 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     }
     for i in 0..m {
         for f in &fs {
-            let base_graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
+            let base_graph_size = border / 2 + edge_width * i / (m - 1);
             for _ in 0..3 {
-                let mut d = (max_graph_size - border) / m;
-                if d == 0 {
-                    d = 1;
-                }
+                let d = if edge_width / m > 0 {
+                    edge_width / m
+                } else {
+                    1
+                };
+                // TODO: ランダムじゃなくて等間隔を試す
                 let diff = rnd::gen_range(0, 2 * d) - d;
                 let graph_size = base_graph_size - diff;
                 if graph_size > max_graph_size {
@@ -91,6 +98,8 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     let start_score = state.score;
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
+
+    // let mut score_log = vec![];
 
     // TODO: 焼きなまし
     // TODO: 時間管理を効率的に
@@ -131,6 +140,9 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
             state.reverse_command(&command);
         }
 
+        // if iter_count % 100 == 0 {
+        //     score_log.push(state.score);
+        // }
         iter_count += 1;
     }
 
@@ -146,6 +158,9 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         );
         state.selected = selected;
     }
+
+    // let mut score_log_file = File::create("data/score_log.txt").unwrap();
+    // writeln!(score_log_file, "{:?}", score_log).unwrap();
 
     let mut graphs = vec![];
     for (i, e) in state.selected.iter().enumerate() {
@@ -237,7 +252,7 @@ impl State {
     }
 
     fn calc_score(&self) -> f64 {
-        const CONSIDER_RANGE: usize = 10;
+        const CONSIDER_COUNT: usize = 10;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
@@ -255,7 +270,7 @@ impl State {
         }
         min_dists.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mut score = 0.;
-        for i in 0..CONSIDER_RANGE {
+        for i in 0..CONSIDER_COUNT {
             score += min_dists[i];
         }
         score
