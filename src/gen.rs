@@ -253,17 +253,21 @@ impl State {
 
     fn calc_score(&self) -> f64 {
         const CONSIDER_COUNT: usize = 10;
+        const CONSIDER_RANGE: usize = 10;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
         for (i, ie) in self.selected.iter().enumerate() {
             let mut min_dist = 1e10;
             let i_idx = self.groups[i][*ie];
-            for (j, je) in self.selected.iter().enumerate() {
+            let l = i - usize::min(i, CONSIDER_RANGE);
+            let r = usize::min(self.selected.len(), i + CONSIDER_RANGE);
+            for j in l..r {
                 if i == j {
                     continue;
                 }
-                let j_idx = self.groups[j][*je];
+                let je = self.selected[j];
+                let j_idx = self.groups[j][je];
                 min_dist = f64::min(min_dist, self.similarity_matrix[i_idx][j_idx]);
             }
             min_dists.push(min_dist);
@@ -275,7 +279,6 @@ impl State {
         }
         score
     }
-
     pub fn format_to_string(&self) -> String {
         self.graphs
             .iter()
