@@ -34,19 +34,17 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
+    const SIMULATE_TRIAL_COUNT: usize = 20;
 
     // TODO: epsを考慮する
+    // TODO: borderの必要性の確認
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
     let is_extreme = eps >= 0.35 && m >= 70;
     let border = if is_extreme { 0 } else { n };
-    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = if eps <= 0.3 || m <= 40 {
-        vec![f1, f2, f4]
-    } else {
-        vec![f1, f2, f3, f4]
-    };
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f3, f4];
 
-    let mut groups = vec![];
+    let mut groups = vec![vec![]; m];
     for i in 0..m {
         for f in &fs {
             let graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
@@ -55,14 +53,35 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
             graphs.push(graph);
         }
         let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
-        groups.push(group);
+        groups[i] = group;
+    }
+    for i in 0..m {
+        for f in &fs {
+            let base_graph_size = border / 2 + (max_graph_size - border) * i / (m - 1);
+            for _ in 0..3 {
+                let mut d = (max_graph_size - border) / m;
+                if d == 0 {
+                    d = 1;
+                }
+                let diff = rnd::gen_range(0, 2 * d) - d;
+                let graph_size = base_graph_size - diff;
+                if graph_size > max_graph_size {
+                    continue;
+                }
+                let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
+                graph.simulated_degrees = calc_simulated_degrees(&graph, eps, SIMULATE_TRIAL_COUNT);
+                groups[i].push(graphs.len());
+                graphs.push(graph);
+            }
+        }
     }
 
-    const SIMULATE_TRIAL_COUNT: usize = 100;
     let mut selected = vec![];
     for i in 0..m {
         selected.push(i % fs.len());
     }
+
+    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     let mut state = State::new(graphs, selected.clone(), groups);
     let mut iter_count = 0;
@@ -71,6 +90,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     // let time_limit = 0.;
 
     let start_score = state.score;
+    eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     // TODO: 焼きなまし
     // TODO: 時間管理を効率的に
