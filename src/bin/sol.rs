@@ -1,6 +1,3 @@
-#[allow(unused_imports)]
-use std::fs::File;
-
 use std::io;
 use std::io::Write;
 
@@ -46,15 +43,10 @@ fn main() {
     // M, epsに対応するグラフを出力する
     let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
 
-    // let mut log_file = File::create("data/visualizer.log").unwrap();
-
     println!("{}", n);
-    // writeln!(log_file, "{} {}", n, m).unwrap();
-    // writeln!(log_file, "{}", eps).unwrap();
 
     for graph in &graphs {
         println!("{}", graph.to_raw_format());
-        // writeln!(log_file, "{}", raw_g).unwrap();
     }
     flush();
 
@@ -64,13 +56,11 @@ fn main() {
     for _ in 0..QUERY_COUNT {
         // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
-        // write!(log_file, "{}", raw_h).unwrap();
         // hとGとの類似度を求め、類似度が最大のGを出力する
         let h = Graph::from_raw_format(n, &raw_h);
 
         let best_graph_index = solve(&graphs, &h, eps);
         println!("{}", best_graph_index);
-        // writeln!(log_file, "{}", best_graph_index).unwrap();
         flush();
         // eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
     }

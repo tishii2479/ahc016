@@ -1,4 +1,4 @@
-use std::{env, ops::RangeInclusive};
+use std::{env, fs::File, io::Write, ops::RangeInclusive};
 
 use ahc016::{gen::create_optimal_graphs_greedy, graph::operate_toggle, solver::solve};
 
@@ -20,10 +20,18 @@ fn main() {
     let mut best_score = 0.;
     let e = ((eps * 100.).round() as i64).to_string();
 
+    let mut log_file = File::create("data/visualizer.log").unwrap();
+
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     // TODO: 試すNは、小さいのは全て試した方が良い
     for n in N_RANGE.step_by(2) {
+        writeln!(log_file, "{} {}", n, m).unwrap();
+        writeln!(log_file, "{}", eps).unwrap();
+
         let graphs = create_optimal_graphs_greedy(n, m, eps, CONSTRUCT_TIME_LIMIT);
+        for graph in &graphs {
+            writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
+        }
 
         let mut correct_count = 0;
         for i in 0..m {
@@ -33,6 +41,9 @@ fn main() {
 
                 operate_toggle(&mut h, eps);
                 let expected_graph_index = solve(&graphs, &h, eps);
+
+                write!(log_file, "{}", h.to_raw_format()).unwrap();
+                writeln!(log_file, "{} {}", answer_graph_index, expected_graph_index).unwrap();
 
                 if answer_graph_index == expected_graph_index {
                     correct_count += 1;
