@@ -18,8 +18,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
         // TODO: graph_raw_formatを使い回す
         // TODO: 等間隔以外を試す
         // TODO: 下駄 の大きさを変える
-        let is_extreme = eps >= 0.35 && m >= 70;
-        let border = if is_extreme { 0 } else { n };
+        let border = n;
         let edge_width = max_graph_size - border;
         let graph_size = border / 2 + edge_width * i / (m - 1);
 
@@ -39,13 +38,13 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
     const SIMULATE_TRIAL_COUNT: usize = 20;
+    const CANDIDATE_COUNT: usize = 3;
 
     // TODO: epsを考慮する
     // TODO: borderの必要性の確認
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
-    let is_extreme = eps >= 0.35 && m >= 70;
-    let border = if is_extreme { 0 } else { n };
+    let border = n;
     let edge_width = max_graph_size - border;
     let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f3, f4];
 
@@ -63,7 +62,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     for i in 0..m {
         for f in &fs {
             let base_graph_size = border / 2 + edge_width * i / (m - 1);
-            for _ in 0..3 {
+            for _ in 0..CANDIDATE_COUNT {
                 let d = if edge_width / m > 0 {
                     edge_width / m
                 } else {
