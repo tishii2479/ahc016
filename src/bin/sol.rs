@@ -54,10 +54,14 @@ fn main() {
 
     // 各クエリを処理する
     for _ in 0..QUERY_COUNT {
-        // eprintln!("Query: {}", q);
         let raw_h = read_graph_input(&stdin);
+
         // hとGとの類似度を求め、類似度が最大のGを出力する
-        let h = Graph::from_raw_format(n, &raw_h);
+        let mut h = Graph::from_raw_format(n, &raw_h);
+        // h.degreesをシミュレーション後の次数列とみなす
+        h.simulated_degrees = h.degrees.clone();
+        h.simulated_degrees
+            .sort_by(|a, b| a.partial_cmp(b).unwrap());
 
         let best_graph_index = solve(&graphs, &h, eps);
         println!("{}", best_graph_index);

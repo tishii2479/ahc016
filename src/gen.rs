@@ -2,9 +2,7 @@
 use std::{fs::File, io::Write};
 
 use crate::{
-    graph::{
-        calc_degrees_similarity, calc_simulated_degrees, vertex_indicies_to_pair_index, Graph,
-    },
+    graph::{calc_graph_similarity, calc_simulated_degrees, vertex_indicies_to_pair_index, Graph},
     util::{rnd, time},
 };
 
@@ -243,10 +241,8 @@ impl State {
                 if i == j {
                     self.similarity_matrix[i][j] = 0.;
                 } else {
-                    self.similarity_matrix[i][j] = calc_degrees_similarity(
-                        &self.graphs[i].simulated_degrees,
-                        &self.graphs[j].simulated_degrees,
-                    );
+                    self.similarity_matrix[i][j] =
+                        calc_graph_similarity(&self.graphs[i], &self.graphs[j]);
                 }
             }
         }

@@ -4,7 +4,8 @@ use crate::util::rnd;
 pub struct Graph {
     pub n: usize,
     pub edge_count: usize,
-    pub degrees: Vec<usize>,
+    // TODO: usizeに戻す?
+    pub degrees: Vec<f64>,
     pub simulated_degrees: Vec<f64>,
     // TODO: BitSetにかえる
     edges: Vec<bool>,
@@ -14,7 +15,7 @@ pub struct Graph {
 
 impl Graph {
     pub fn from_vec_format(n: usize, vec_format: Vec<bool>) -> Graph {
-        let mut degrees = vec![0; n];
+        let mut degrees = vec![0.; n];
         let edges = vec_format;
         let mut pairs = vec![(0, 0); edges.len()];
 
@@ -24,8 +25,8 @@ impl Graph {
         for i in 0..n {
             for j in i + 1..n {
                 if edges[it] {
-                    degrees[i] += 1;
-                    degrees[j] += 1;
+                    degrees[i] += 1.;
+                    degrees[j] += 1.;
                     edge_count += 1;
                 }
                 pairs[it] = (i, j);
@@ -70,11 +71,11 @@ impl Graph {
 
         let (v, u) = self.pairs[edge_index];
         if self.edges[edge_index] {
-            self.degrees[v] += 1;
-            self.degrees[u] += 1;
+            self.degrees[v] += 1.;
+            self.degrees[u] += 1.;
         } else {
-            self.degrees[v] -= 1;
-            self.degrees[u] -= 1;
+            self.degrees[v] -= 1.;
+            self.degrees[u] -= 1.;
         }
     }
 
@@ -110,9 +111,9 @@ pub fn calc_simulated_degrees(graph: &Graph, eps: f64, trial: usize) -> Vec<f64>
         let mut sim_graph = graph.clone();
         operate_toggle(&mut sim_graph, eps);
         let mut degrees = sim_graph.degrees.clone();
-        degrees.sort();
+        degrees.sort_by(|a, b| a.partial_cmp(b).unwrap());
         for i in 0..graph.n {
-            simulated_degrees[i] += degrees[i] as f64;
+            simulated_degrees[i] += degrees[i];
         }
     }
     for i in 0..graph.n {
@@ -132,6 +133,7 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
 }
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
+// a、bはソート済みである必要がある
 pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
     debug_assert_eq!(a.len(), b.len());
 
@@ -143,6 +145,13 @@ pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
     }
 
     score
+}
+
+// グラフの類似度を計算する関数
+// 値が小さいほど類似している
+pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> f64 {
+    let degree_similarity = calc_degrees_similarity(&a.simulated_degrees, &b.simulated_degrees);
+    degree_similarity
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {

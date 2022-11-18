@@ -1,6 +1,6 @@
 use std::ops::RangeInclusive;
 
-use crate::graph::{calc_degrees_similarity, Graph};
+use crate::graph::{calc_graph_similarity, Graph};
 
 pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
     let n = h.n;
@@ -19,6 +19,7 @@ pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
     // 辺の総数の期待値が標準偏差 * err の範囲にあるグラフの数を数えて、
     // その数が0以上になるまで err を増やす
     // 調べるグラフの数を削減することが目的
+    // TODO: 必要かどうかチェック
     loop {
         let std_var = (max_edge_count as f64 * eps * (1. - eps)).powf(0.5);
         let error_width = std_var * err;
@@ -45,12 +46,8 @@ pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
     let mut best_graph_index = 0;
     let mut min_score = 1e10;
 
-    let mut h_degrees = h.degrees.clone();
-    h_degrees.sort();
-    let h_degrees = h_degrees.iter().map(|x| *x as f64).collect();
-
     for i in 0..graphs.len() {
-        let score = calc_degrees_similarity(&h_degrees, &graphs[i].simulated_degrees);
+        let score = calc_graph_similarity(&h, &graphs[i]);
         if score < min_score {
             min_score = score;
             best_graph_index = i;
