@@ -113,6 +113,7 @@ pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
     let mut simulated_degrees = vec![0.; graph.n];
 
     for _ in 0..trial {
+        // ISSUE: cloneが重い
         let mut sim_graph = graph.clone();
         operate_toggle(&mut sim_graph, eps);
 
@@ -133,6 +134,7 @@ pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
     for i in 0..SQUARE_COUNT {
         square_edge_counts[i] /= trial as f64;
     }
+
     graph.simulated_degrees = simulated_degrees;
     graph.simulated_squares = square_edge_counts;
 }
@@ -184,7 +186,7 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     }
 }
 
-// a.simulated_degrees、b.simulated_degreesは同じ長さである必要がある
+// a.simulated_squares、b.simulated_squaresは同じ長さである必要がある
 fn calc_matrix_similarity(a: &Graph, b: &Graph) -> f64 {
     let mut score = 0.;
 

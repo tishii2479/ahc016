@@ -34,9 +34,9 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
     const SIMULATE_TRIAL_COUNT: usize = 20;
-    const CANDIDATE_COUNT: usize = 4;
+    const CANDIDATE_COUNT: usize = 3;
 
-    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6];
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6, f7];
 
     let mut selected = vec![0; m];
     for i in 0..m {
@@ -77,6 +77,10 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
                     continue;
                 }
                 let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
+                if graph.edge_count != graph_size {
+                    // fを使ってgraph_sizeのグラフが作れない場合があるので、その時はgraphsに追加しない
+                    continue;
+                }
                 calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
                 groups[i].push(graphs.len());
                 graphs.push(graph);
@@ -88,7 +92,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     let mut state = State::new(graphs, selected.clone(), groups);
     let mut iter_count = 0;
-    let start_temp: f64 = state.score / 10.;
+    let start_temp: f64 = state.score / 5.;
     let end_temp: f64 = state.score / 1000.;
     // let time_limit = 0.;
 
@@ -405,5 +409,25 @@ fn f6(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
         }
     }
 
+    graph_raw_format
+}
+
+// 右上から斜めに貼る
+#[allow(unused_variables, dead_code)]
+fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+
+    for i in 0..n {
+        let l = usize::clamp((n / 5) * (i / (n / 5) + 1), i + 1, n);
+        for j in l..n {
+            if counter >= graph_size {
+                break;
+            }
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
     graph_raw_format
 }
