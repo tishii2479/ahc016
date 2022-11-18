@@ -11,7 +11,7 @@ use ahc016::{
 fn main() {
     const TEST_COUNT: usize = 100;
     const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
-    const TRIAL_COUNT: usize = 5;
+    const TRIAL_COUNT: usize = 10;
 
     let args: Vec<String> = env::args().collect();
     let m = args[1].parse::<usize>().unwrap();
@@ -30,8 +30,10 @@ fn main() {
     // writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
     // }
 
-    let mut correct_count = 0;
+    let mut counts = vec![];
+
     for _ in 0..TRIAL_COUNT {
+        let mut correct_count = 0;
         let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
         for i in 0..m {
             let answer_graph_index = i;
@@ -53,9 +55,17 @@ fn main() {
             }
         }
         eprintln!("correct_count: {}", correct_count);
+
+        counts.push(correct_count);
     }
 
-    let all_trial_count = TRIAL_COUNT * m;
+    let cut = 1;
+    let all_trial_count = (TRIAL_COUNT - cut * 2) * m;
+    let mut correct_count = 0;
+    counts.sort();
+    for i in cut..(TRIAL_COUNT - cut) {
+        correct_count += counts[i];
+    }
     let wrong_count = all_trial_count - correct_count;
     let score = 1e9 * 0.9_f64.powf(wrong_count as f64 / all_trial_count as f64 * TEST_COUNT as f64)
         / n as f64;
