@@ -1,4 +1,4 @@
-use crate::util::{rnd, Dsu};
+use crate::util::rnd;
 
 #[derive(Debug, Clone)]
 pub struct Graph {
@@ -32,13 +32,14 @@ impl Graph {
                 it += 1;
             }
         }
-        let sim_degrees = degrees.iter().map(|x| *x as f64).collect();
+        // 初期化時にはシミュレーションは行わず、必要な時にだけ行う
+        let simulated_degrees = vec![0.; n];
 
         Graph {
             n,
             edge_count,
             degrees,
-            simulated_degrees: sim_degrees,
+            simulated_degrees,
             edges,
             pairs,
         }

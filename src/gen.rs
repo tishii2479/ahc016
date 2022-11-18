@@ -15,7 +15,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
     const SIMULATE_TRIAL_COUNT: usize = 20;
 
     for i in 0..m {
-        // TODO: graph_raw_formatを使い回す
+        // TODO: graph_raw_formatを使い回す、ボトルネックではないので優先度は低い
         let border = n;
         let edge_width = max_graph_size - border;
         let graph_size = border / 2 + edge_width * i / (m - 1);
@@ -38,14 +38,21 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     const SIMULATE_TRIAL_COUNT: usize = 20;
     const CANDIDATE_COUNT: usize = 4;
 
-    // TODO: borderの大きさの調整
-    let mut graphs = vec![];
-    let max_graph_size = n * (n - 1) / 2;
-    let border = n;
-    let edge_width = max_graph_size - border;
     let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6];
 
+    let mut selected = vec![0; m];
+    for i in 0..m {
+        selected[i] = i % 3;
+    }
+
+    let mut graphs = vec![];
     let mut groups = vec![vec![]; m];
+
+    let max_graph_size = n * (n - 1) / 2;
+    // TODO: borderの大きさの調整
+    let border = n;
+    let edge_width = max_graph_size - border;
+
     for i in 0..m {
         for f in &fs {
             let graph_size = border / 2 + edge_width * i / (m - 1);
@@ -79,11 +86,6 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         }
     }
 
-    let mut selected = vec![0; m];
-    for i in 0..m {
-        selected[i] = i % 3;
-    }
-
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
     let mut state = State::new(graphs, selected.clone(), groups);
@@ -108,7 +110,6 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
             temp = start_temp.powf(1. - progress) * end_temp.powf(progress);
         }
 
-        // 辺を付け替える
         let mut command: Command;
 
         loop {
