@@ -90,7 +90,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
-    let mut state = State::new(graphs, selected.clone(), groups);
+    let mut state = State::new(graphs, selected.clone(), groups, eps);
     let mut iter_count = 0;
     let start_temp: f64 = state.score / 5.;
     let end_temp: f64 = state.score / 1000.;
@@ -191,7 +191,7 @@ pub struct State {
 }
 
 impl State {
-    fn new(graphs: Vec<Graph>, selected: Vec<usize>, groups: Vec<Vec<usize>>) -> State {
+    fn new(graphs: Vec<Graph>, selected: Vec<usize>, groups: Vec<Vec<usize>>, eps: f64) -> State {
         let similarity_matrix = vec![vec![0.; graphs.len()]; graphs.len()];
         let mut state = State {
             score: 0.,
@@ -200,7 +200,7 @@ impl State {
             groups,
             similarity_matrix,
         };
-        state.update_similarity_matrix_slow();
+        state.update_similarity_matrix_slow(eps);
         state.score = state.calc_score();
         state
     }
@@ -239,14 +239,14 @@ impl State {
         }
     }
 
-    fn update_similarity_matrix_slow(&mut self) {
+    fn update_similarity_matrix_slow(&mut self, eps: f64) {
         for i in 0..self.graphs.len() {
             for j in 0..self.graphs.len() {
                 if i == j {
                     self.similarity_matrix[i][j] = 0.;
                 } else {
                     self.similarity_matrix[i][j] =
-                        calc_graph_similarity(&self.graphs[i], &self.graphs[j]);
+                        calc_graph_similarity(&self.graphs[i], &self.graphs[j], eps);
                 }
             }
         }

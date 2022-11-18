@@ -214,12 +214,13 @@ fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 
 // グラフの類似度を計算する関数
 // 値が小さいほど類似している
-pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> f64 {
+pub fn calc_graph_similarity(a: &Graph, b: &Graph, eps: f64) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
-    let square_similarity = calc_matrix_similarity(&a, &b) * 0.1;
-    // eprintln!("{}, {}", degree_similarity, square_similarity);
-    degree_similarity + square_similarity
-    // degree_similarity
+    if eps >= 0.30 {
+        degree_similarity + calc_matrix_similarity(&a, &b) * 0.1
+    } else {
+        degree_similarity
+    }
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
