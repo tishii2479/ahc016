@@ -129,24 +129,6 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     }
 }
 
-pub fn calc_connected_components_size(graph: &Graph) -> Vec<usize> {
-    let mut uf = Dsu::new(graph.n);
-    for i in 0..graph.edges.len() {
-        if graph.edges[i] {
-            let (v, u) = graph.pairs[i];
-            uf.merge(v, u);
-        }
-    }
-    let mut sizes = vec![];
-    for i in 0..graph.n {
-        if uf.leader(i) == i {
-            sizes.push(uf.size(i));
-        }
-    }
-    sizes.sort_by(|a, b| b.cmp(a));
-    sizes
-}
-
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
 #[allow(unused)]
 fn calc_degrees_hist_similarity(a: &Graph, b: &Graph) -> i64 {
@@ -173,30 +155,12 @@ fn calc_degrees_hist_similarity(a: &Graph, b: &Graph) -> i64 {
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
 pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
-    // TODO: degreesの管理を止める
     debug_assert_eq!(a.len(), b.len());
 
     let mut score = 0.;
 
     for i in 0..a.len() {
         let d = a[i] - b[i];
-        score += d * d;
-    }
-
-    score
-}
-
-#[allow(unused)]
-fn calc_connected_size_similarity(a: &Graph, b: &Graph) -> i64 {
-    let a = calc_connected_components_size(&a);
-    let b = calc_connected_components_size(&b);
-
-    let mut score = 0;
-
-    for i in 0..usize::max(a.len(), b.len()) {
-        let ea = if i < a.len() { a[i] } else { 0 };
-        let eb = if i < b.len() { b[i] } else { 0 };
-        let d = ea as i64 - eb as i64;
         score += d * d;
     }
 
