@@ -108,6 +108,7 @@ impl Graph {
 }
 
 pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
+    // TODO: square_edge_countsを使わないなら計算しない
     let mut square_edge_counts = vec![];
     let mut simulated_degrees = vec![0.; graph.n];
 
@@ -217,13 +218,14 @@ fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 
 // グラフの類似度を計算する関数
 // 値が小さいほど類似している
-pub fn calc_graph_similarity(a: &Graph, b: &Graph, _eps: f64) -> f64 {
+pub fn calc_graph_similarity(a: &Graph, b: &Graph, eps: f64) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
-    // if eps >= 0.30 {
-    degree_similarity + calc_matrix_similarity(&a, &b) * 0.05
-    // } else {
-    // degree_similarity
-    // }
+    // TODO: 係数の調整
+    if eps <= 0.15 {
+        degree_similarity + calc_matrix_similarity(&a, &b) * 0.04
+    } else {
+        degree_similarity
+    }
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
