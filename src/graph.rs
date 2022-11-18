@@ -104,7 +104,7 @@ impl Graph {
     }
 }
 
-pub fn calc_simulated_degrees(graph: &Graph, eps: f64, trial: usize) -> Vec<f64> {
+pub fn calc_simulated_degrees(graph: &mut Graph, eps: f64, trial: usize) {
     let mut simulated_degrees = vec![0.; graph.n];
     for _ in 0..trial {
         let mut sim_graph = graph.clone();
@@ -118,7 +118,12 @@ pub fn calc_simulated_degrees(graph: &Graph, eps: f64, trial: usize) -> Vec<f64>
     for i in 0..graph.n {
         simulated_degrees[i] /= trial as f64;
     }
-    simulated_degrees
+    graph.simulated_degrees = simulated_degrees;
+}
+
+// TODO: calc_simulated_degreesと統合する
+pub fn calc_simulated_matrix(graph: &Graph, eps: f64, trial: usize) -> Vec<f64> {
+    vec![]
 }
 
 // epsの確率でgraphを変化させる
