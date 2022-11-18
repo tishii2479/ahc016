@@ -80,9 +80,9 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         }
     }
 
-    let mut selected = vec![];
+    let mut selected = vec![0; m];
     for i in 0..m {
-        selected.push(i % fs.len());
+        selected[i] = i % fs.len();
     }
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
@@ -388,47 +388,22 @@ fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// #[test]
-// fn test_perform_reverse_swap_command() {
-//     let n = 5;
-//     let m = 10;
-//     let eps = 0.1;
-//     let graphs = create_optimal_graphs(n, m, eps, 1.);
-//     let graph_count = graphs.len();
-//     let selected = vec![0, 1, 2, 3, 4];
-//     let mut state = State::new(graphs, selected);
+// 右上から斜めに貼る
+#[allow(unused_variables, dead_code)]
+fn f6(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
 
-//     let mut commands = vec![];
+    for j in (0..n).rev() {
+        for i in 0..(n - j) {
+            if counter >= graph_size {
+                break;
+            }
+            let p = vertex_indicies_to_pair_index(n, i, i + j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
 
-//     let copied_state = state.clone();
-
-//     for _ in 0..20 {
-//         let move_index = rnd::gen_range(0, m);
-//         let from_graph_index = state.selected[move_index];
-//         let to_graph_index = {
-//             if (from_graph_index == graph_count - 1) || (from_graph_index > 0 && rnd::nextf() < 0.5)
-//             {
-//                 from_graph_index - 1
-//             } else {
-//                 from_graph_index + 1
-//             }
-//         };
-//         let command = Command::Swap {
-//             move_index,
-//             from_graph_index,
-//             to_graph_index,
-//         };
-
-//         if state.can_perform_command(&command) {
-//             state.perform_command(&command);
-//             commands.push(command);
-//         }
-//         assert_eq!(state.score, state.calc_score());
-//     }
-
-//     for command in commands.into_iter().rev() {
-//         state.reverse_command(&command);
-//     }
-
-//     assert_eq!(state.score, copied_state.score);
-// }
+    graph_raw_format
+}
