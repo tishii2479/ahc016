@@ -62,11 +62,11 @@ fn main() {
         h.simulated_degrees = h.degrees.clone();
         h.simulated_degrees
             .sort_by(|a, b| a.partial_cmp(b).unwrap());
+        h.simulated_squares = calc_simulated_square(&h);
 
         let best_graph_index = solve(&graphs, &h, eps);
         println!("{}", best_graph_index);
         flush();
-        // eprintln!("selected: {}, dist: {}", best_graph_index, min_score);
     }
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());

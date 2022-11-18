@@ -1,15 +1,19 @@
 use std::{env, fs::File, io::Write, ops::RangeInclusive};
 
-use ahc016::{gen::create_optimal_graphs_greedy, graph::operate_toggle, solver::solve};
+#[allow(unused_imports)]
+use ahc016::{
+    gen::{create_optimal_graphs, create_optimal_graphs_greedy},
+    graph::{calc_simulated_square, operate_toggle},
+    solver::solve,
+};
 
 // 各M, epsについて、最適なNを探し、そのグラフを出力する
 fn main() {
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
-    const N_RANGE: RangeInclusive<usize> = 4..=100;
+    const N_RANGE: RangeInclusive<usize> = 90..=100;
 
     const TEST_COUNT: usize = 100;
-    // const SOLVE_TIME_LIMIT: f64 = 3.2;
-    const CONSTRUCT_TIME_LIMIT: f64 = 0.;
+    const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
     const TRIAL_COUNT: usize = 20;
 
     let args: Vec<String> = env::args().collect();
@@ -24,11 +28,14 @@ fn main() {
 
     // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     // TODO: 試すNは、小さいのは全て試した方が良い
-    for n in N_RANGE.step_by(2) {
+    // TODO: trial_countを減らして、グラフ生成を都度行う
+    for n in N_RANGE.step_by(1) {
         writeln!(log_file, "{} {}", n, m).unwrap();
         writeln!(log_file, "{}", eps).unwrap();
 
-        let graphs = create_optimal_graphs_greedy(n, m, eps, CONSTRUCT_TIME_LIMIT);
+        eprintln!("{}, {}, {}", n, m, eps);
+
+        let graphs = create_optimal_graphs(n, m, eps, CONSTRUCT_TIME_LIMIT);
         for graph in &graphs {
             writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
         }
@@ -40,6 +47,11 @@ fn main() {
                 let mut h = graphs[answer_graph_index].clone();
 
                 operate_toggle(&mut h, eps);
+                h.simulated_degrees = h.degrees.clone();
+                h.simulated_degrees
+                    .sort_by(|a, b| a.partial_cmp(b).unwrap());
+                h.simulated_squares = calc_simulated_square(&h);
+
                 let expected_graph_index = solve(&graphs, &h, eps);
 
                 write!(log_file, "{}", h.to_raw_format()).unwrap();
@@ -65,5 +77,8 @@ fn main() {
     }
 
     println!("Result = {} {} {}", m, e, best_n);
-    eprintln!("M = {}, eps = {}, best_n = {}", m, eps, best_n);
+    eprintln!(
+        "M = {}, eps = {}, best_n = {}, best_score = {}",
+        m, eps, best_n, best_score
+    );
 }

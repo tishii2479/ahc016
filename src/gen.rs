@@ -2,7 +2,7 @@
 use std::{fs::File, io::Write};
 
 use crate::{
-    graph::{calc_graph_similarity, calc_simulated_degrees, vertex_indicies_to_pair_index, Graph},
+    graph::{calc_graph_similarity, calc_simulated_graph, vertex_indicies_to_pair_index, Graph},
     util::{rnd, time},
 };
 
@@ -25,7 +25,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
         };
         let f = fs[i % fs.len()];
         let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
-        calc_simulated_degrees(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+        calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
         graphs.push(graph);
     }
     return graphs;
@@ -55,7 +55,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         for f in &fs {
             let graph_size = border / 2 + edge_width * i / (m - 1);
             let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
-            calc_simulated_degrees(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+            calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
             graphs.push(graph);
         }
         let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
@@ -77,7 +77,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
                     continue;
                 }
                 let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
-                calc_simulated_degrees(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+                calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
                 groups[i].push(graphs.len());
                 graphs.push(graph);
             }
@@ -249,6 +249,7 @@ impl State {
     }
 
     fn calc_score(&self) -> f64 {
+        // TODO: 調整
         const CONSIDER_COUNT: usize = 10;
         const CONSIDER_RANGE: usize = 10;
         // 各グラフ間の距離の総和

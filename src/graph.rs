@@ -6,6 +6,7 @@ pub struct Graph {
     pub edge_count: usize,
     pub degrees: Vec<f64>,
     pub simulated_degrees: Vec<f64>,
+    pub simulated_squares: Vec<f64>,
     // TODO: BitSetにかえる
     edges: Vec<bool>,
     // TODO: 取り除く
@@ -35,12 +36,14 @@ impl Graph {
 
         // 初期化時にはシミュレーションは行わず、必要な時にだけ行う
         let simulated_degrees = vec![];
+        let simulated_squares = vec![];
 
         Graph {
             n,
             edge_count,
             degrees,
             simulated_degrees,
+            simulated_squares,
             edges,
             pairs,
         }
@@ -104,6 +107,11 @@ impl Graph {
     }
 }
 
+pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
+    calc_simulated_degrees(graph, eps, trial);
+    calc_simulated_matrix(graph, eps, trial);
+}
+
 pub fn calc_simulated_degrees(graph: &mut Graph, eps: f64, trial: usize) {
     let mut simulated_degrees = vec![0.; graph.n];
     for _ in 0..trial {
@@ -122,8 +130,60 @@ pub fn calc_simulated_degrees(graph: &mut Graph, eps: f64, trial: usize) {
 }
 
 // TODO: calc_simulated_degreesと統合する
-pub fn calc_simulated_matrix(graph: &Graph, eps: f64, trial: usize) -> Vec<f64> {
-    vec![]
+fn calc_simulated_matrix(graph: &mut Graph, eps: f64, trial: usize) {
+    const SQUARE_COUNT: usize = 50;
+    let mut square_edge_counts = vec![0.; SQUARE_COUNT];
+
+    for _ in 0..trial {
+        let mut sim_graph = graph.clone();
+        operate_toggle(&mut sim_graph, eps);
+
+        let edge_counts = calc_simulated_square(&sim_graph);
+        for i in 0..SQUARE_COUNT {
+            square_edge_counts[i] += edge_counts[i];
+        }
+    }
+    for i in 0..SQUARE_COUNT {
+        square_edge_counts[i] /= trial as f64;
+    }
+    graph.simulated_squares = square_edge_counts;
+}
+
+pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
+    const SQUARE_COUNT: usize = 50;
+    static mut SQUARES: Vec<(usize, usize, usize, usize)> = vec![];
+    unsafe {
+        while SQUARES.len() < SQUARE_COUNT {
+            // let sz = usize::min(graph.n, rnd::gen_range(5, 10));
+            let sz = graph.n / 10 + 1;
+            let x = rnd::gen_range(0, graph.n - sz + 1);
+            let y = rnd::gen_range(0, graph.n - sz + 1);
+            SQUARES.push((x, y, sz, sz));
+        }
+    }
+
+    let mut rank: Vec<usize> = (0..graph.degrees.len()).collect();
+    rank.sort_by(|i, j| graph.degrees[*i].partial_cmp(&graph.degrees[*j]).unwrap());
+
+    let mut edge_counts = vec![0.; SQUARE_COUNT];
+
+    unsafe {
+        for (i, (x, y, h, w)) in SQUARES.iter().enumerate() {
+            let mut edge_count = 0.;
+            for i in *y..(y + h) {
+                for j in *x..(x + w) {
+                    if i == j {
+                        continue;
+                    }
+                    let p = vertex_indicies_to_pair_index(graph.n, rank[i], rank[j]);
+                    edge_count += if graph.edges[p] { 1. } else { 0. };
+                }
+            }
+            edge_counts[i] += edge_count;
+        }
+    }
+
+    edge_counts
 }
 
 // epsの確率でgraphを変化させる
@@ -136,18 +196,21 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     }
 }
 
-pub fn calc_matrix_similarity(a: &Graph, b: &Graph) -> f64 {
-    // 次数が高い順に頂点番号をソートする
-    // rank[i] := i番目に次数が大きい頂点の番号
-    // [i, i+5] [j, j+5]
-    0.
+// a.simulated_degrees、b.simulated_degreesは同じ長さである必要がある
+fn calc_matrix_similarity(a: &Graph, b: &Graph) -> f64 {
+    let mut score = 0.;
+
+    for i in 0..a.simulated_squares.len() {
+        let d = a.simulated_squares[i] - b.simulated_squares[i];
+        score += d * d;
+    }
+
+    score
 }
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
-// a.simulated_degrees、b.simulated_degreesはソート済みである必要がある
-pub fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
-    debug_assert_eq!(a.simulated_degrees.len(), b.simulated_degrees.len());
-
+// a.simulated_degrees、b.simulated_degreesは同じ長さ、ソート済みである必要がある
+fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
     let mut score = 0.;
 
     for i in 0..a.simulated_degrees.len() {
@@ -162,7 +225,10 @@ pub fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 // 値が小さいほど類似している
 pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
-    degree_similarity
+    let square_similarity = calc_matrix_similarity(&a, &b) * 0.02;
+    // eprintln!("{}, {}", degree_similarity, square_similarity);
+    degree_similarity + square_similarity
+    // degree_similarity
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
