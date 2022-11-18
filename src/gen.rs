@@ -435,3 +435,77 @@ fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     }
     graph_raw_format
 }
+
+// f1とf2の中間
+#[allow(unused_variables, dead_code)]
+fn f8(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 0..max_graph_size {
+        if counter >= graph_size / 3 {
+            break;
+        }
+        graph_raw_format[j] = true;
+        counter += 1;
+    }
+    for j in 0..max_graph_size {
+        if counter >= graph_size {
+            break;
+        }
+        graph_raw_format[max_graph_size - j - 1] = true;
+        counter += 1;
+    }
+    graph_raw_format
+}
+
+// f1とf2の中間
+#[allow(unused_variables, dead_code)]
+fn f9(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for j in 0..max_graph_size {
+        if counter >= graph_size * 2 / 3 {
+            break;
+        }
+        graph_raw_format[j] = true;
+        counter += 1;
+    }
+    for j in 0..max_graph_size {
+        if counter >= graph_size {
+            break;
+        }
+        graph_raw_format[max_graph_size - j - 1] = true;
+        counter += 1;
+    }
+    graph_raw_format
+}
+
+// f3とf5の中間
+#[allow(unused_variables, dead_code)]
+fn f10(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+    let mut graph_raw_format = vec![false; max_graph_size];
+    let mut counter = 0;
+    for d in 1..n {
+        for i in 0..n - d {
+            if counter >= graph_size / 2 {
+                break;
+            }
+            let j = i + d;
+            let p = vertex_indicies_to_pair_index(n, i, j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+
+    for j in (0..n).rev() {
+        for i in 0..(n - j) {
+            if counter >= graph_size {
+                break;
+            }
+            let p = vertex_indicies_to_pair_index(n, i, i + j);
+            graph_raw_format[p] = true;
+            counter += 1;
+        }
+    }
+    graph_raw_format
+}
