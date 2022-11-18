@@ -4,7 +4,6 @@ use crate::util::rnd;
 pub struct Graph {
     pub n: usize,
     pub edge_count: usize,
-    // TODO: usizeに戻す?
     pub degrees: Vec<f64>,
     pub simulated_degrees: Vec<f64>,
     // TODO: BitSetにかえる
@@ -132,15 +131,22 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
     }
 }
 
+pub fn calc_matrix_similarity(a: &Graph, b: &Graph) -> f64 {
+    // 次数が高い順に頂点番号をソートする
+    // rank[i] := i番目に次数が大きい頂点の番号
+    // [i, i+5] [j, j+5]
+    0.
+}
+
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
-// a、bはソート済みである必要がある
-pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
-    debug_assert_eq!(a.len(), b.len());
+// a.simulated_degrees、b.simulated_degreesはソート済みである必要がある
+pub fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
+    debug_assert_eq!(a.simulated_degrees.len(), b.simulated_degrees.len());
 
     let mut score = 0.;
 
-    for i in 0..a.len() {
-        let d = a[i] - b[i];
+    for i in 0..a.simulated_degrees.len() {
+        let d = a.simulated_degrees[i] - b.simulated_degrees[i];
         score += d * d;
     }
 
@@ -150,13 +156,13 @@ pub fn calc_degrees_similarity(a: &Vec<f64>, b: &Vec<f64>) -> f64 {
 // グラフの類似度を計算する関数
 // 値が小さいほど類似している
 pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> f64 {
-    let degree_similarity = calc_degrees_similarity(&a.simulated_degrees, &b.simulated_degrees);
+    let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
     degree_similarity
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
     let mn = usize::min(v1, v2);
-    let mx = usize::max(v1, v2);
+    let mx = v1 + v2 - mn;
 
     ((n - 1) + (n - mn)) * mn / 2 + (mx - mn - 1)
 }
