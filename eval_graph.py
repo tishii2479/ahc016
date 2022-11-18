@@ -1,3 +1,4 @@
+import ast
 import multiprocessing
 import subprocess
 
@@ -23,12 +24,20 @@ def eval_graph(params):
 
 def main():
     subprocess.run("cargo build --release", shell=True)
+
+    with open("data/greedy_n_map.txt", "r") as f:
+        d = f.readline().replace("(", '"').replace(")", '"').replace(" ", "")
+
     params = []
     # TODO: 試すNをgreedyの結果から決める
     for m in range(10, 101):
         for e in range(0, 41):
-            for n in range(4, 101):
-                params.append((m, e / 100, n))
+            best_n = d[f"{m},{e / 100:.2f}"]
+            if best_n >= 90:
+                params.append((m, e / 100, 100))
+            else:
+                for n in range(max(4, best_n - 10), best_n + 1):
+                    params.append((m, e / 100, n))
 
     n_map = {}
 

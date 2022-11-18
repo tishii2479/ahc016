@@ -257,7 +257,7 @@ impl State {
         // CONSIDER_COUNTはMを超えてはならない
         const CONSIDER_COUNT: usize = 10;
         // ISSUE: CONSIDER_RANGEにない方がスコアがいいかも
-        const CONSIDER_RANGE: usize = 100;
+        const CONSIDER_RANGE: usize = 10;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
