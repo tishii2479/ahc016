@@ -108,44 +108,32 @@ impl Graph {
 }
 
 pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
-    calc_simulated_degrees(graph, eps, trial);
-    calc_simulated_matrix(graph, eps, trial);
-}
-
-pub fn calc_simulated_degrees(graph: &mut Graph, eps: f64, trial: usize) {
+    const SQUARE_COUNT: usize = 50;
+    let mut square_edge_counts = vec![0.; SQUARE_COUNT];
     let mut simulated_degrees = vec![0.; graph.n];
+
     for _ in 0..trial {
         let mut sim_graph = graph.clone();
         operate_toggle(&mut sim_graph, eps);
+
         let mut degrees = sim_graph.degrees.clone();
         degrees.sort_by(|a, b| a.partial_cmp(b).unwrap());
         for i in 0..graph.n {
             simulated_degrees[i] += degrees[i];
         }
-    }
-    for i in 0..graph.n {
-        simulated_degrees[i] /= trial as f64;
-    }
-    graph.simulated_degrees = simulated_degrees;
-}
-
-// TODO: calc_simulated_degreesと統合する
-fn calc_simulated_matrix(graph: &mut Graph, eps: f64, trial: usize) {
-    const SQUARE_COUNT: usize = 50;
-    let mut square_edge_counts = vec![0.; SQUARE_COUNT];
-
-    for _ in 0..trial {
-        let mut sim_graph = graph.clone();
-        operate_toggle(&mut sim_graph, eps);
 
         let edge_counts = calc_simulated_square(&sim_graph);
         for i in 0..SQUARE_COUNT {
             square_edge_counts[i] += edge_counts[i];
         }
     }
+    for i in 0..graph.n {
+        simulated_degrees[i] /= trial as f64;
+    }
     for i in 0..SQUARE_COUNT {
         square_edge_counts[i] /= trial as f64;
     }
+    graph.simulated_degrees = simulated_degrees;
     graph.simulated_squares = square_edge_counts;
 }
 
