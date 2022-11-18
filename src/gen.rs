@@ -44,7 +44,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     let max_graph_size = n * (n - 1) / 2;
     let border = n;
     let edge_width = max_graph_size - border;
-    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f3, f4];
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6];
 
     let mut groups = vec![vec![]; m];
     for i in 0..m {
@@ -82,7 +82,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     let mut selected = vec![0; m];
     for i in 0..m {
-        selected[i] = i % fs.len();
+        selected[i] = i % 3;
     }
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
