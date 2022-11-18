@@ -256,6 +256,7 @@ impl State {
         // TODO: 調整
         // CONSIDER_COUNTはMを超えてはならない
         const CONSIDER_COUNT: usize = 10;
+        // ISSUE: CONSIDER_RANGEにない方がスコアがいいかも
         const CONSIDER_RANGE: usize = 100;
         // 各グラフ間の距離の総和
         // 大きいほどよい
@@ -420,7 +421,8 @@ fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     let mut counter = 0;
 
     for i in 0..n {
-        let l = usize::clamp((n / 5) * (i / (n / 5) + 1), i + 1, n);
+        let v = (n / 5) * (i / (n / 5) + 1);
+        let l = usize::min(usize::max(i + 1, v), n);
         for j in l..n {
             if counter >= graph_size {
                 break;
