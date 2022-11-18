@@ -24,7 +24,7 @@ fn main() {
     // writeln!(log_file, "{} {}", n, m).unwrap();
     // writeln!(log_file, "{}", eps).unwrap();
 
-    eprintln!("{}, {}, {}", n, m, eps);
+    eprintln!("{}, {}, {}", m, eps, n);
 
     // for graph in &graphs {
     // writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
@@ -52,6 +52,7 @@ fn main() {
                 correct_count += 1;
             }
         }
+        eprintln!("correct_count: {}", correct_count);
     }
 
     let all_trial_count = TRIAL_COUNT * m;
