@@ -421,7 +421,8 @@ fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     let mut counter = 0;
 
     for i in 0..n {
-        let v = (n / 5) * (i / (n / 5) + 1);
+        let sz = usize::max(n / 5, 1);
+        let v = sz * (i / sz + 1);
         let l = usize::min(usize::max(i + 1, v), n);
         for j in l..n {
             if counter >= graph_size {

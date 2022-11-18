@@ -15,7 +15,7 @@ def eval_graph(params):
     stdout = proc.stdout.decode("utf8")
     for line in stdout.splitlines():
         if len(line) >= 9 and line[:9].lower() == "result = ":
-            m, eps, n, score = line[10:].split(",")
+            m, eps, n, score = line[9:].split(",")
 
     print(f"{m}, {eps}, {n}, {score}")
     return m, eps, n, score
@@ -33,8 +33,8 @@ def main():
     n_map = {}
 
     with multiprocessing.Pool(max(1, multiprocessing.cpu_count() - 2)) as pool:
-        for m, e, best_n in pool.imap_unordered(eval_graph, params):
-            n_map[(m, e)] = best_n
+        for m, eps, n, score in pool.imap_unordered(eval_graph, params):
+            n_map[(m, eps, n)] = score
 
     print(n_map)
     with open("data/n_map.txt", "w") as f:

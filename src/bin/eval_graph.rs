@@ -60,4 +60,5 @@ fn main() {
     let score = 1e9 * 0.9_f64.powf(wrong_count as f64 / all_trial_count as f64 * TEST_COUNT as f64)
         / n as f64;
     eprintln!("Result = {},{},{},{}", m, eps, n, score);
+    println!("Result = {},{},{},{}", m, eps, n, score);
 }
