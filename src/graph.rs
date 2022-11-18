@@ -32,8 +32,9 @@ impl Graph {
                 it += 1;
             }
         }
+
         // 初期化時にはシミュレーションは行わず、必要な時にだけ行う
-        let simulated_degrees = vec![0.; n];
+        let simulated_degrees = vec![];
 
         Graph {
             n,
@@ -128,30 +129,6 @@ pub fn operate_toggle(graph: &mut Graph, eps: f64) {
             graph.toggle_edge(j);
         }
     }
-}
-
-// 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
-#[allow(unused)]
-fn calc_degrees_hist_similarity(a: &Graph, b: &Graph) -> i64 {
-    let mut a_hist = vec![0; a.n];
-    let mut b_hist = vec![0; a.n];
-
-    for e in &a.degrees {
-        a_hist[*e] += 1;
-    }
-    for e in &b.degrees {
-        b_hist[*e] += 1;
-    }
-
-    debug_assert_eq!(a.n, b.n);
-
-    let mut score = 0;
-
-    for i in 0..a.n {
-        score += i64::min(a_hist[i], b_hist[i]);
-    }
-
-    score
 }
 
 // 次数の差の平方和をグラフの類似度とした時の、類似度を返す関数
