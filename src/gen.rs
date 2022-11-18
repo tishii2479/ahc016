@@ -36,9 +36,8 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
     const SIMULATE_TRIAL_COUNT: usize = 20;
-    const CANDIDATE_COUNT: usize = 3;
+    const CANDIDATE_COUNT: usize = 4;
 
-    // TODO: epsを考慮する
     // TODO: borderの大きさの調整
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
@@ -60,13 +59,13 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     for i in 0..m {
         for f in &fs {
             let base_graph_size = border / 2 + edge_width * i / (m - 1);
+            let d = if edge_width / m > 0 {
+                // TODO: 調整する
+                edge_width / m
+            } else {
+                1
+            };
             for _ in 0..CANDIDATE_COUNT {
-                let d = if edge_width / m > 0 {
-                    edge_width / m
-                } else {
-                    1
-                };
-                // TODO: ランダムじゃなくて等間隔を試す
                 let diff = rnd::gen_range(0, 2 * d) - d;
                 let graph_size = base_graph_size - diff;
                 if graph_size > max_graph_size {
@@ -98,12 +97,16 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     // let mut score_log = vec![];
 
-    // TODO: 焼きなまし
-    // TODO: 時間管理を効率的に
-    while time::elapsed_seconds() < start_time + time_limit {
+    const LOOP_INTERVAL: usize = 100;
+    let mut progress;
+    let mut temp = 0.;
+
+    while iter_count % LOOP_INTERVAL != 0 || time::elapsed_seconds() < start_time + time_limit {
         let current_score = state.score;
-        let progress = (time::elapsed_seconds() - start_time) / time_limit;
-        let temp = start_temp.powf(1. - progress) * end_temp.powf(progress);
+        if iter_count % LOOP_INTERVAL == 0 {
+            progress = (time::elapsed_seconds() - start_time) / time_limit;
+            temp = start_temp.powf(1. - progress) * end_temp.powf(progress);
+        }
 
         // 辺を付け替える
         let mut command: Command;
@@ -313,7 +316,6 @@ fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
 }
 
 // なるべく均等に辺を貼る、斜め
-// TODO: ちゃんと均等にする
 #[allow(unused_variables, dead_code)]
 fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
