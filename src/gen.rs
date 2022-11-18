@@ -254,8 +254,9 @@ impl State {
 
     fn calc_score(&self) -> f64 {
         // TODO: 調整
+        // CONSIDER_COUNTはMを超えてはならない
         const CONSIDER_COUNT: usize = 10;
-        const CONSIDER_RANGE: usize = 10;
+        const CONSIDER_RANGE: usize = 100;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
@@ -412,7 +413,7 @@ fn f6(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// 右上から斜めに貼る
+// 真ん中を開けるように作る
 #[allow(unused_variables, dead_code)]
 fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];

@@ -108,8 +108,7 @@ impl Graph {
 }
 
 pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
-    const SQUARE_COUNT: usize = 50;
-    let mut square_edge_counts = vec![0.; SQUARE_COUNT];
+    let mut square_edge_counts = vec![];
     let mut simulated_degrees = vec![0.; graph.n];
 
     for _ in 0..trial {
@@ -124,14 +123,17 @@ pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
         }
 
         let edge_counts = calc_simulated_square(&sim_graph);
-        for i in 0..SQUARE_COUNT {
+        if square_edge_counts.len() == 0 {
+            square_edge_counts = vec![0.; edge_counts.len()];
+        }
+        for i in 0..edge_counts.len() {
             square_edge_counts[i] += edge_counts[i];
         }
     }
     for i in 0..graph.n {
         simulated_degrees[i] /= trial as f64;
     }
-    for i in 0..SQUARE_COUNT {
+    for i in 0..square_edge_counts.len() {
         square_edge_counts[i] /= trial as f64;
     }
 
@@ -140,37 +142,36 @@ pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
 }
 
 pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
-    const SQUARE_COUNT: usize = 50;
-    static mut SQUARES: Vec<(usize, usize, usize, usize)> = vec![];
-    unsafe {
-        while SQUARES.len() < SQUARE_COUNT {
-            // let sz = usize::min(graph.n, rnd::gen_range(5, 10));
-            let sz = graph.n / 10 + 1;
-            let x = rnd::gen_range(0, graph.n - sz + 1);
-            let y = rnd::gen_range(0, graph.n - sz + 1);
-            SQUARES.push((x, y, sz, sz));
-        }
-    }
-
     let mut rank: Vec<usize> = (0..graph.degrees.len()).collect();
     rank.sort_by(|i, j| graph.degrees[*i].partial_cmp(&graph.degrees[*j]).unwrap());
 
-    let mut edge_counts = vec![0.; SQUARE_COUNT];
+    // squaresを作る
+    let mut squares: Vec<(usize, usize, usize, usize)> = vec![];
 
-    unsafe {
-        for (i, (x, y, h, w)) in SQUARES.iter().enumerate() {
-            let mut edge_count = 0.;
-            for i in *y..(y + h) {
-                for j in *x..(x + w) {
-                    if i == j {
-                        continue;
-                    }
-                    let p = vertex_indicies_to_pair_index(graph.n, rank[i], rank[j]);
-                    edge_count += if graph.edges[p] { 1. } else { 0. };
+    // f7と対応させる
+    for i in 0..5 {
+        let l = graph.n / 5 * i;
+        let w = graph.n / 5;
+        squares.push((l, l, w, w));
+    }
+
+    let mut edge_counts = vec![0.; squares.len()];
+
+    for (i, (x, y, h, w)) in squares.iter().enumerate() {
+        let mut edge_count = 0.;
+        for i in *y..(y + h) {
+            for j in *x..(x + w) {
+                if i == j {
+                    continue;
                 }
+                if i >= graph.n || j >= graph.n {
+                    continue;
+                }
+                let p = vertex_indicies_to_pair_index(graph.n, rank[i], rank[j]);
+                edge_count += if graph.edges[p] { 1. } else { 0. };
             }
-            edge_counts[i] += edge_count;
         }
+        edge_counts[i] += edge_count;
     }
 
     edge_counts
@@ -215,7 +216,7 @@ fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 // 値が小さいほど類似している
 pub fn calc_graph_similarity(a: &Graph, b: &Graph) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
-    let square_similarity = calc_matrix_similarity(&a, &b) * 0.02;
+    let square_similarity = calc_matrix_similarity(&a, &b) * 0.1;
     // eprintln!("{}, {}", degree_similarity, square_similarity);
     degree_similarity + square_similarity
     // degree_similarity
