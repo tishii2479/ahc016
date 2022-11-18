@@ -150,9 +150,12 @@ pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
 
     // f7と対応させる
     for i in 0..5 {
-        let l = graph.n / 5 * i;
-        let w = graph.n / 5;
-        squares.push((l, l, w, w));
+        for j in 0..5 {
+            let x = graph.n / 5 * i;
+            let y = graph.n / 5 * j;
+            let w = graph.n / 5;
+            squares.push((x, y, w, w));
+        }
     }
 
     let mut edge_counts = vec![0.; squares.len()];
@@ -214,13 +217,13 @@ fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 
 // グラフの類似度を計算する関数
 // 値が小さいほど類似している
-pub fn calc_graph_similarity(a: &Graph, b: &Graph, eps: f64) -> f64 {
+pub fn calc_graph_similarity(a: &Graph, b: &Graph, _eps: f64) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
-    if eps >= 0.30 {
-        degree_similarity + calc_matrix_similarity(&a, &b) * 0.1
-    } else {
-        degree_similarity
-    }
+    // if eps >= 0.30 {
+    degree_similarity + calc_matrix_similarity(&a, &b) * 0.05
+    // } else {
+    // degree_similarity
+    // }
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {
