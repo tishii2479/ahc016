@@ -10,7 +10,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
-    const SIMULATE_TRIAL_COUNT: usize = 20;
+    const SIMULATE_TRIAL_COUNT: usize = 10;
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す、ボトルネックではないので優先度は低い
@@ -33,8 +33,8 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
-    const SIMULATE_TRIAL_COUNT: usize = 20;
-    const CANDIDATE_COUNT: usize = 3;
+    const SIMULATE_TRIAL_COUNT: usize = 10;
+    const CANDIDATE_COUNT: usize = 2;
 
     let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6, f7];
 
