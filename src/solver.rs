@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use crate::graph::{calc_graph_similarity, Graph};
 
-pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
+pub fn solve(graphs: &Vec<Graph>, h: &Graph, m: usize, eps: f64) -> usize {
     let n = h.n;
     let h_edge_count = h.calc_edge_count();
     let max_edge_count = n * (n - 1) / 2;
@@ -47,7 +47,7 @@ pub fn solve(graphs: &Vec<Graph>, h: &Graph, eps: f64) -> usize {
     let mut min_score = 1e10;
 
     for i in 0..graphs.len() {
-        let score = calc_graph_similarity(&h, &graphs[i], eps);
+        let score = calc_graph_similarity(&h, &graphs[i], m, eps);
         if score < min_score {
             min_score = score;
             best_graph_index = i;

@@ -1,5 +1,7 @@
 use crate::util::rnd;
 
+const USE_SQUARE_LIMIT: f64 = 10.;
+
 #[derive(Debug, Clone)]
 pub struct Graph {
     pub n: usize,
@@ -107,7 +109,7 @@ impl Graph {
     }
 }
 
-pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
+pub fn calc_simulated_graph(graph: &mut Graph, m: usize, eps: f64, trial: usize) {
     // TODO: square_edge_countsを使わないなら計算しない
     let mut square_edge_counts = vec![];
     let mut simulated_degrees = vec![0.; graph.n];
@@ -123,6 +125,10 @@ pub fn calc_simulated_graph(graph: &mut Graph, eps: f64, trial: usize) {
             simulated_degrees[i] += degrees[i];
         }
 
+        // m*epsが10以下ならcalc_simulated_squareはしない
+        if m as f64 * eps <= USE_SQUARE_LIMIT {
+            continue;
+        }
         let edge_counts = calc_simulated_square(&sim_graph);
         if square_edge_counts.len() == 0 {
             square_edge_counts = vec![0.; edge_counts.len()];
@@ -146,7 +152,6 @@ pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
     let mut rank: Vec<usize> = (0..graph.degrees.len()).collect();
     rank.sort_by(|i, j| graph.degrees[*i].partial_cmp(&graph.degrees[*j]).unwrap());
 
-    // squaresを作る
     const DIV: usize = 5;
     let mut edge_counts = vec![0.; DIV * DIV];
 
@@ -213,10 +218,15 @@ fn calc_simulated_degrees_similarity(a: &Graph, b: &Graph) -> f64 {
 
 // グラフの類似度を計算する関数
 // 値が小さいほど類似している
-pub fn calc_graph_similarity(a: &Graph, b: &Graph, eps: f64) -> f64 {
+pub fn calc_graph_similarity(a: &Graph, b: &Graph, m: usize, eps: f64) -> f64 {
     let degree_similarity = calc_simulated_degrees_similarity(&a, &b);
     // TODO: 係数の調整
-    degree_similarity + calc_matrix_similarity(&a, &b) * (eps * 0.15)
+    // m*epsがUSE_SQUARE_LIMIT以下ならcalc_matrix_similarityはしない
+    if m as f64 * eps <= USE_SQUARE_LIMIT {
+        degree_similarity
+    } else {
+        degree_similarity + calc_matrix_similarity(&a, &b) * (eps * 0.15)
+    }
 }
 
 pub fn vertex_indicies_to_pair_index(n: usize, v1: usize, v2: usize) -> usize {

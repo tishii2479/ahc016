@@ -45,7 +45,7 @@ fn main() {
                 .sort_by(|a, b| a.partial_cmp(b).unwrap());
             h.simulated_squares = calc_simulated_square(&h);
 
-            let expected_graph_index = solve(&graphs, &h, eps);
+            let expected_graph_index = solve(&graphs, &h, m, eps);
 
             // write!(log_file, "{}", h.to_raw_format()).unwrap();
             // writeln!(log_file, "{} {}", answer_graph_index, expected_graph_index).unwrap();

@@ -25,7 +25,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
         };
         let f = fs[i % fs.len()];
         let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
-        calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+        calc_simulated_graph(&mut graph, m, eps, SIMULATE_TRIAL_COUNT);
         graphs.push(graph);
     }
     return graphs;
@@ -55,7 +55,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         for f in &fs {
             let graph_size = border / 2 + edge_width * i / (m - 1);
             let mut graph = Graph::from_vec_format(n, f(graph_size, max_graph_size, n, m));
-            calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+            calc_simulated_graph(&mut graph, m, eps, SIMULATE_TRIAL_COUNT);
             graphs.push(graph);
         }
         let group = ((i * fs.len())..((i + 1) * fs.len())).collect();
@@ -85,7 +85,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
                     // fを使ってgraph_sizeのグラフが作れない場合があるので、その時はgraphsに追加しない
                     continue;
                 }
-                calc_simulated_graph(&mut graph, eps, SIMULATE_TRIAL_COUNT);
+                calc_simulated_graph(&mut graph, m, eps, SIMULATE_TRIAL_COUNT);
                 groups[i].push(graphs.len());
                 graphs.push(graph);
             }
@@ -94,7 +94,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
 
-    let mut state = State::new(graphs, selected.clone(), groups, eps);
+    let mut state = State::new(graphs, selected.clone(), groups, m, eps);
     let mut iter_count = 0;
     let start_temp: f64 = state.score / 5.;
     let end_temp: f64 = state.score / 1000.;
@@ -195,7 +195,13 @@ pub struct State {
 }
 
 impl State {
-    fn new(graphs: Vec<Graph>, selected: Vec<usize>, groups: Vec<Vec<usize>>, eps: f64) -> State {
+    fn new(
+        graphs: Vec<Graph>,
+        selected: Vec<usize>,
+        groups: Vec<Vec<usize>>,
+        m: usize,
+        eps: f64,
+    ) -> State {
         let similarity_matrix = vec![vec![0.; graphs.len()]; graphs.len()];
         let mut state = State {
             score: 0.,
@@ -204,7 +210,7 @@ impl State {
             groups,
             similarity_matrix,
         };
-        state.update_similarity_matrix_slow(eps);
+        state.update_similarity_matrix_slow(m, eps);
         state.score = state.calc_score();
         state
     }
@@ -243,14 +249,14 @@ impl State {
         }
     }
 
-    fn update_similarity_matrix_slow(&mut self, eps: f64) {
+    fn update_similarity_matrix_slow(&mut self, m: usize, eps: f64) {
         for i in 0..self.graphs.len() {
             for j in 0..self.graphs.len() {
                 if i == j {
                     self.similarity_matrix[i][j] = 0.;
                 } else {
                     self.similarity_matrix[i][j] =
-                        calc_graph_similarity(&self.graphs[i], &self.graphs[j], eps);
+                        calc_graph_similarity(&self.graphs[i], &self.graphs[j], m, eps);
                 }
             }
         }
@@ -278,7 +284,7 @@ impl State {
         min_dists.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mut score = 0.;
         for i in 0..CONSIDER_COUNT {
-            score += min_dists[i];
+            score += min_dists[i].powf(0.5);
         }
         score
     }

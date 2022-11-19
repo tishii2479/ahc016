@@ -27,7 +27,7 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
+    const CONSTRUCT_TIME_LIMIT: f64 = 2.8;
     // const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
@@ -64,7 +64,7 @@ fn main() {
             .sort_by(|a, b| a.partial_cmp(b).unwrap());
         h.simulated_squares = calc_simulated_square(&h);
 
-        let best_graph_index = solve(&graphs, &h, eps);
+        let best_graph_index = solve(&graphs, &h, m, eps);
         println!("{}", best_graph_index);
         flush();
     }
