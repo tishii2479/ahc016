@@ -10,7 +10,7 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
     let mut graphs = vec![];
     let max_graph_size = n * (n - 1) / 2;
 
-    const SIMULATE_TRIAL_COUNT: usize = 10;
+    const SIMULATE_TRIAL_COUNT: usize = 15;
 
     for i in 0..m {
         // TODO: graph_raw_formatを使い回す、ボトルネックではないので優先度は低い
@@ -33,10 +33,10 @@ pub fn create_optimal_graphs_greedy(n: usize, m: usize, eps: f64, _time_limit: f
 
 pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> Vec<Graph> {
     let start_time = time::elapsed_seconds();
-    const SIMULATE_TRIAL_COUNT: usize = 10;
+    const SIMULATE_TRIAL_COUNT: usize = 20;
     const CANDIDATE_COUNT: usize = 2;
 
-    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f6, f7];
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f7];
 
     let mut selected = vec![0; m];
     for i in 0..m {
@@ -64,15 +64,19 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     for i in 0..m {
         for f in &fs {
             let base_graph_size = border / 2 + edge_width * i / (m - 1);
-            let d = if edge_width / m > 0 {
+            let d = if edge_width / m > 1 {
                 // TODO: 調整する
                 edge_width / m
             } else {
-                1
+                2
             };
-            for _ in 0..CANDIDATE_COUNT {
-                let diff = rnd::gen_range(0, 2 * d) - d;
-                let graph_size = base_graph_size - diff;
+            for c in 0..CANDIDATE_COUNT {
+                let diff = rnd::gen_range(1, d);
+                let graph_size = if c % 2 == 0 {
+                    base_graph_size - diff
+                } else {
+                    base_graph_size + diff
+                };
                 if graph_size > max_graph_size {
                     continue;
                 }
@@ -256,22 +260,17 @@ impl State {
         // TODO: 調整
         // CONSIDER_COUNTはMを超えてはならない
         const CONSIDER_COUNT: usize = 10;
-        // ISSUE: CONSIDER_RANGEにない方がスコアがいいかも
-        const CONSIDER_RANGE: usize = 10;
         // 各グラフ間の距離の総和
         // 大きいほどよい
         let mut min_dists = vec![];
         for (i, ie) in self.selected.iter().enumerate() {
             let mut min_dist = 1e10;
             let i_idx = self.groups[i][*ie];
-            let l = i - usize::min(i, CONSIDER_RANGE);
-            let r = usize::min(self.selected.len(), i + CONSIDER_RANGE);
-            for j in l..r {
+            for (j, je) in self.selected.iter().enumerate() {
                 if i == j {
                     continue;
                 }
-                let je = self.selected[j];
-                let j_idx = self.groups[j][je];
+                let j_idx = self.groups[j][*je];
                 min_dist = f64::min(min_dist, self.similarity_matrix[i_idx][j_idx]);
             }
             min_dists.push(min_dist);

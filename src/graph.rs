@@ -147,35 +147,30 @@ pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
     rank.sort_by(|i, j| graph.degrees[*i].partial_cmp(&graph.degrees[*j]).unwrap());
 
     // squaresを作る
-    let mut squares: Vec<(usize, usize, usize, usize)> = vec![];
+    const DIV: usize = 5;
+    let mut edge_counts = vec![0.; DIV * DIV];
 
-    // f7と対応させる
     for i in 0..5 {
         for j in 0..5 {
             let x = graph.n / 5 * i;
             let y = graph.n / 5 * j;
             let w = graph.n / 5;
-            squares.push((x, y, w, w));
-        }
-    }
-
-    let mut edge_counts = vec![0.; squares.len()];
-
-    for (i, (x, y, h, w)) in squares.iter().enumerate() {
-        let mut edge_count = 0.;
-        for i in *y..(y + h) {
-            for j in *x..(x + w) {
-                if i == j {
-                    continue;
+            let h = graph.n / 5;
+            let mut edge_count = 0.;
+            for i in y..(y + h) {
+                for j in x..(x + w) {
+                    if i == j {
+                        continue;
+                    }
+                    if i >= graph.n || j >= graph.n {
+                        continue;
+                    }
+                    let p = vertex_indicies_to_pair_index(graph.n, rank[i], rank[j]);
+                    edge_count += if graph.edges[p] { 1. } else { 0. };
                 }
-                if i >= graph.n || j >= graph.n {
-                    continue;
-                }
-                let p = vertex_indicies_to_pair_index(graph.n, rank[i], rank[j]);
-                edge_count += if graph.edges[p] { 1. } else { 0. };
             }
+            edge_counts[i * DIV + j] += edge_count;
         }
-        edge_counts[i] += edge_count;
     }
 
     edge_counts
