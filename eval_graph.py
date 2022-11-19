@@ -32,17 +32,14 @@ def main():
 
     params = []
     # TODO: 試すNをgreedyの結果から決める
-    for m in range(10, 101):
-        for e in range(0, 41):
+    for m in range(10, 101, 2):
+        for e in range(0, 41, 2):
             if e % 10 == 0:
                 best_n = d[f"{m},{e / 100:.1f}"]
             else:
                 best_n = d[f"{m},{e / 100:.2f}"]
-            if best_n >= 90:
-                params.append((m, e / 100, 100))
-            else:
-                for n in range(max(4, best_n - 10), best_n + 1):
-                    params.append((m, e / 100, n))
+            for n in range(max(4, best_n - 10), best_n + 1):
+                params.append((m, e / 100, n))
 
     n_map = {}
 

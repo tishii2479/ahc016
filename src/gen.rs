@@ -283,6 +283,7 @@ impl State {
         }
         score
     }
+
     pub fn format_to_string(&self) -> String {
         self.graphs
             .iter()

@@ -11,7 +11,7 @@ use ahc016::{
 fn main() {
     const TEST_COUNT: usize = 100;
     const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
-    const TRIAL_COUNT: usize = 1;
+    const TRIAL_COUNT: usize = 5;
 
     let args: Vec<String> = env::args().collect();
     let m = args[1].parse::<usize>().unwrap();
@@ -59,7 +59,7 @@ fn main() {
         counts.push(correct_count);
     }
 
-    let cut = 0;
+    let cut = 1;
     let all_trial_count = (TRIAL_COUNT - cut * 2) * m;
     let mut correct_count = 0;
     counts.sort();
