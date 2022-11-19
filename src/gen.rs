@@ -119,14 +119,43 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         let mut command: Command;
 
         loop {
-            let move_index = rnd::gen_range(0, m);
-            let from_graph_index = state.selected[move_index];
-            let to_graph_index = { rnd::gen_range(0, state.groups[move_index].len()) };
-            command = Command::Swap {
-                move_index,
-                from_graph_index,
-                to_graph_index,
-            };
+            let p = rnd::nextf();
+            if p < 0.4 {
+                let move_index = rnd::gen_range(0, m);
+                let from_graph_index = state.selected[move_index];
+                let to_graph_index = { rnd::gen_range(0, state.groups[move_index].len()) };
+                command = Command::Change {
+                    move_index,
+                    from_graph_index,
+                    to_graph_index,
+                };
+            } else if p < 0.6 {
+                let move_index = rnd::gen_range(0, m - 1);
+                command = Command::Swap {
+                    move_index1: move_index,
+                    move_index2: move_index + 1,
+                };
+            } else if p < 0.8 {
+                command = Command::Swap {
+                    move_index1: rnd::gen_range(0, m),
+                    move_index2: rnd::gen_range(0, m),
+                };
+            } else {
+                let move_index1 = rnd::gen_range(0, m);
+                let from_graph_index1 = state.selected[move_index1];
+                let to_graph_index1 = { rnd::gen_range(0, state.groups[move_index1].len()) };
+                let move_index2 = rnd::gen_range(0, m);
+                let from_graph_index2 = state.selected[move_index2];
+                let to_graph_index2 = { rnd::gen_range(0, state.groups[move_index2].len()) };
+                command = Command::ChangeAdj {
+                    move_index1,
+                    from_graph_index1,
+                    to_graph_index1,
+                    move_index2,
+                    from_graph_index2,
+                    to_graph_index2,
+                };
+            }
 
             if state.can_perform_command(&command) {
                 state.perform_command(&command);
@@ -141,7 +170,6 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         if adopt {
             // 採用
             state.score = new_score;
-            // eprintln!("{}", state.score);
         } else {
             // 不採用、ロールバック
             state.reverse_command(&command);
@@ -178,10 +206,22 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
 
 #[derive(Debug, Clone)]
 enum Command {
-    Swap {
+    Change {
         move_index: usize,
         from_graph_index: usize,
         to_graph_index: usize,
+    },
+    Swap {
+        move_index1: usize,
+        move_index2: usize,
+    },
+    ChangeAdj {
+        move_index1: usize,
+        from_graph_index1: usize,
+        to_graph_index1: usize,
+        move_index2: usize,
+        from_graph_index2: usize,
+        to_graph_index2: usize,
     },
 }
 
@@ -217,34 +257,86 @@ impl State {
 
     fn can_perform_command(&mut self, command: &Command) -> bool {
         match command {
-            Command::Swap {
-                move_index: _,
-                from_graph_index,
+            Command::Change {
+                move_index,
+                from_graph_index: _,
                 to_graph_index,
-            } => from_graph_index != to_graph_index,
+            } => *to_graph_index < self.groups[*move_index].len(),
+            Command::Swap {
+                move_index1,
+                move_index2,
+            } => {
+                self.selected[*move_index1] < self.groups[*move_index2].len()
+                    && self.selected[*move_index2] < self.groups[*move_index1].len()
+            }
+            Command::ChangeAdj {
+                move_index1,
+                from_graph_index1: _,
+                to_graph_index1,
+                move_index2,
+                from_graph_index2: _,
+                to_graph_index2,
+            } => {
+                *to_graph_index1 < self.groups[*move_index1].len()
+                    && *to_graph_index2 < self.groups[*move_index2].len()
+            }
         }
     }
 
     fn perform_command(&mut self, command: &Command) {
         match command {
-            Command::Swap {
+            Command::Change {
                 move_index,
                 from_graph_index: _,
                 to_graph_index,
             } => {
                 self.selected[*move_index] = *to_graph_index;
             }
+            Command::Swap {
+                move_index1,
+                move_index2,
+            } => {
+                self.selected.swap(*move_index1, *move_index2);
+            }
+            Command::ChangeAdj {
+                move_index1,
+                from_graph_index1: _,
+                to_graph_index1,
+                move_index2,
+                from_graph_index2: _,
+                to_graph_index2,
+            } => {
+                self.selected[*move_index1] = *to_graph_index1;
+                self.selected[*move_index2] = *to_graph_index2;
+            }
         }
     }
 
     fn reverse_command(&mut self, command: &Command) {
         match command {
-            Command::Swap {
+            Command::Change {
                 move_index,
                 from_graph_index,
                 to_graph_index: _,
             } => {
                 self.selected[*move_index] = *from_graph_index;
+            }
+            Command::Swap {
+                move_index1,
+                move_index2,
+            } => {
+                self.selected.swap(*move_index1, *move_index2);
+            }
+            Command::ChangeAdj {
+                move_index1,
+                from_graph_index1,
+                to_graph_index1: _,
+                move_index2,
+                from_graph_index2,
+                to_graph_index2: _,
+            } => {
+                self.selected[*move_index1] = *from_graph_index1;
+                self.selected[*move_index2] = *from_graph_index2;
             }
         }
     }
@@ -284,7 +376,7 @@ impl State {
         min_dists.sort_by(|a, b| a.partial_cmp(b).unwrap());
         let mut score = 0.;
         for i in 0..CONSIDER_COUNT {
-            score += min_dists[i].powf(0.5);
+            score += min_dists[i];
         }
         score
     }
