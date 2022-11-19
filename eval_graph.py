@@ -26,13 +26,18 @@ def main():
     subprocess.run("cargo build --release", shell=True)
 
     with open("data/greedy_n_map.txt", "r") as f:
-        d = f.readline().replace("(", '"').replace(")", '"').replace(" ", "")
+        d = ast.literal_eval(
+            f.readline().replace("(", '"').replace(")", '"').replace(" ", "")
+        )
 
     params = []
     # TODO: 試すNをgreedyの結果から決める
     for m in range(10, 101):
         for e in range(0, 41):
-            best_n = d[f"{m},{e / 100:.2f}"]
+            if e % 10 == 0:
+                best_n = d[f"{m},{e / 100:.1f}"]
+            else:
+                best_n = d[f"{m},{e / 100:.2f}"]
             if best_n >= 90:
                 params.append((m, e / 100, 100))
             else:
