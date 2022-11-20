@@ -1,7 +1,7 @@
 import multiprocessing
 import subprocess
 
-CASE = 500
+CASE = 1000
 TL = 40.0
 
 

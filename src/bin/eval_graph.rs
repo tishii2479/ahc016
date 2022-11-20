@@ -10,7 +10,7 @@ use ahc016::{
 // 各M, epsについて、最適なNを探し、そのグラフを出力する
 fn main() {
     const TEST_COUNT: usize = 100;
-    const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
+    const CONSTRUCT_TIME_LIMIT: f64 = 2.8;
     const TRIAL_COUNT: usize = 5;
 
     let args: Vec<String> = env::args().collect();
@@ -26,7 +26,7 @@ fn main() {
 
     eprintln!("{}, {}, {}", m, eps, n);
 
-    // for graph in &graphs {
+    // for g``raph in &graphs {
     // writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
     // }
 
