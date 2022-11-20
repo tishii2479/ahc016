@@ -28,7 +28,7 @@ fn main() {
 
     const QUERY_COUNT: usize = 100;
     // FIXME: 最後に4.7に直す
-    const CONSTRUCT_TIME_LIMIT: f64 = 2.8;
+    const CONSTRUCT_TIME_LIMIT: f64 = 4.7;
     // const TIME_LIMIT: f64 = 4.8;
 
     let stdin = io::stdin();
@@ -71,6 +71,4 @@ fn main() {
     }
 
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
-
-    assert!(time::elapsed_seconds() <= 4.95);
 }
