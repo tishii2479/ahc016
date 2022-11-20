@@ -36,7 +36,7 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     const SIMULATE_TRIAL_COUNT: usize = 20;
     const CANDIDATE_COUNT: usize = 2;
 
-    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f4, f3, f7];
+    let fs: Vec<fn(usize, usize, usize, usize) -> Vec<bool>> = vec![f1, f2, f3, f4, f5];
 
     let mut selected = vec![0; m];
     for i in 0..m {
@@ -98,12 +98,9 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
     let mut iter_count = 0;
     let start_temp: f64 = state.score / 5.;
     let end_temp: f64 = state.score / 1000.;
-    // let time_limit = 0.;
 
     let start_score = state.score;
     eprintln!("elapsed seconds: {:.4}", time::elapsed_seconds());
-
-    // let mut score_log = vec![];
 
     const LOOP_INTERVAL: usize = 100;
     let mut progress;
@@ -175,9 +172,6 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
             state.reverse_command(&command);
         }
 
-        // if iter_count % 100 == 0 {
-        //     score_log.push(state.score);
-        // }
         iter_count += 1;
     }
 
@@ -193,9 +187,6 @@ pub fn create_optimal_graphs(n: usize, m: usize, eps: f64, time_limit: f64) -> V
         );
         state.selected = selected;
     }
-
-    // let mut score_log_file = File::create("data/score_log.txt").unwrap();
-    // writeln!(score_log_file, "{:?}", score_log).unwrap();
 
     let mut graphs = vec![];
     for (i, e) in state.selected.iter().enumerate() {
@@ -417,28 +408,9 @@ fn f2(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// なるべく均等に辺を貼る、斜め
-#[allow(unused_variables, dead_code)]
-fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for d in 1..n {
-        for i in 0..n - d {
-            if counter >= graph_size {
-                break;
-            }
-            let j = i + d;
-            let p = vertex_indicies_to_pair_index(n, i, j);
-            graph_raw_format[p] = true;
-            counter += 1;
-        }
-    }
-    graph_raw_format
-}
-
 // f1とf2の中間
 #[allow(unused_variables, dead_code)]
-fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+fn f3(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
     let mut counter = 0;
     for j in 0..max_graph_size {
@@ -458,63 +430,28 @@ fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
     graph_raw_format
 }
 
-// なるべく均等に辺を張る
+// なるべく均等に辺を貼る、斜め
 #[allow(unused_variables, dead_code)]
-fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut degrees = vec![0; n];
-    let mut max_degree = 0;
-
-    // TODO: 高速化
-    for _ in 0..graph_size {
-        let mut best_score = 1000000;
-        let mut best_vs = (0, 0);
-        for i in 0..n {
-            for j in i + 1..n {
-                let p = vertex_indicies_to_pair_index(n, i, j);
-                if graph_raw_format[p] {
-                    continue;
-                }
-                let score = degrees[i] + degrees[j];
-                if score < best_score {
-                    best_score = score;
-                    best_vs = (i, j);
-                }
-            }
-        }
-        let (i, j) = best_vs;
-        let p = vertex_indicies_to_pair_index(n, i, j);
-        graph_raw_format[p] = true;
-        degrees[i] += 1;
-        degrees[j] += 1;
-        max_degree = usize::max(max_degree, usize::max(degrees[i], degrees[j]));
-    }
-    graph_raw_format
-}
-
-// 右上から斜めに貼る
-#[allow(unused_variables, dead_code)]
-fn f6(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+fn f4(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
     let mut counter = 0;
-
-    for j in (0..n).rev() {
-        for i in 0..(n - j) {
+    for d in 1..n {
+        for i in 0..n - d {
             if counter >= graph_size {
                 break;
             }
-            let p = vertex_indicies_to_pair_index(n, i, i + j);
+            let j = i + d;
+            let p = vertex_indicies_to_pair_index(n, i, j);
             graph_raw_format[p] = true;
             counter += 1;
         }
     }
-
     graph_raw_format
 }
 
 // 真ん中を開けるように作る
 #[allow(unused_variables, dead_code)]
-fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
+fn f5(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
     let mut graph_raw_format = vec![false; max_graph_size];
     let mut counter = 0;
 
@@ -527,80 +464,6 @@ fn f7(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool>
                 break;
             }
             let p = vertex_indicies_to_pair_index(n, i, j);
-            graph_raw_format[p] = true;
-            counter += 1;
-        }
-    }
-    graph_raw_format
-}
-
-// f1とf2の中間
-#[allow(unused_variables, dead_code)]
-fn f8(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for j in 0..max_graph_size {
-        if counter >= graph_size / 3 {
-            break;
-        }
-        graph_raw_format[j] = true;
-        counter += 1;
-    }
-    for j in 0..max_graph_size {
-        if counter >= graph_size {
-            break;
-        }
-        graph_raw_format[max_graph_size - j - 1] = true;
-        counter += 1;
-    }
-    graph_raw_format
-}
-
-// f1とf2の中間
-#[allow(unused_variables, dead_code)]
-fn f9(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for j in 0..max_graph_size {
-        if counter >= graph_size * 2 / 3 {
-            break;
-        }
-        graph_raw_format[j] = true;
-        counter += 1;
-    }
-    for j in 0..max_graph_size {
-        if counter >= graph_size {
-            break;
-        }
-        graph_raw_format[max_graph_size - j - 1] = true;
-        counter += 1;
-    }
-    graph_raw_format
-}
-
-// f3とf5の中間
-#[allow(unused_variables, dead_code)]
-fn f10(graph_size: usize, max_graph_size: usize, n: usize, m: usize) -> Vec<bool> {
-    let mut graph_raw_format = vec![false; max_graph_size];
-    let mut counter = 0;
-    for d in 1..n {
-        for i in 0..n - d {
-            if counter >= graph_size / 2 {
-                break;
-            }
-            let j = i + d;
-            let p = vertex_indicies_to_pair_index(n, i, j);
-            graph_raw_format[p] = true;
-            counter += 1;
-        }
-    }
-
-    for j in (0..n).rev() {
-        for i in 0..(n - j) {
-            if counter >= graph_size {
-                break;
-            }
-            let p = vertex_indicies_to_pair_index(n, i, i + j);
             graph_raw_format[p] = true;
             counter += 1;
         }

@@ -18,17 +18,7 @@ fn main() {
     let eps = args[2].parse::<f64>().unwrap();
     let n = args[3].parse::<usize>().unwrap();
 
-    // let mut log_file = File::create("data/visualizer.log").unwrap();
-
-    // TODO: trial_countを減らして、グラフ生成を都度行う
-    // writeln!(log_file, "{} {}", n, m).unwrap();
-    // writeln!(log_file, "{}", eps).unwrap();
-
     eprintln!("{}, {}, {}", m, eps, n);
-
-    // for g``raph in &graphs {
-    // writeln!(log_file, "{}", graph.to_raw_format()).unwrap();
-    // }
 
     let mut counts = vec![];
 
@@ -46,9 +36,6 @@ fn main() {
             h.simulated_squares = calc_simulated_square(&h);
 
             let expected_graph_index = solve(&graphs, &h, m, eps);
-
-            // write!(log_file, "{}", h.to_raw_format()).unwrap();
-            // writeln!(log_file, "{} {}", answer_graph_index, expected_graph_index).unwrap();
 
             if answer_graph_index == expected_graph_index {
                 correct_count += 1;

@@ -9,7 +9,6 @@ use std::{
 
 // 各M, eps, Nについてグラフを構築し、出力する
 fn main() {
-    // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     const N_RANGE: RangeInclusive<usize> = 10..=100;
 
     let args: Vec<String> = env::args().collect();
@@ -21,7 +20,6 @@ fn main() {
 
     eprintln!("Creating M = {}, eps = {}...", m, eps);
 
-    // WARN: 正しくは 4..=100、一時的にNの数を小さくしている
     let output_dir = format!("data/graphs/{m}_{e}/");
     if !Path::exists(Path::new(&output_dir)) {
         fs::create_dir_all(&output_dir).unwrap();
