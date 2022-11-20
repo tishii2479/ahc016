@@ -42,6 +42,8 @@ def main():
         for seed, score, M, eps, err in pool.imap_unordered(execute_case, range(CASE)):
             eps = float(eps)
             M = int(M)
+            if M % 2 == 0 or round(eps * 100) % 2 == 0:
+                continue
             err = int(err)
             count += 1
 

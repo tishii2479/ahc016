@@ -27,6 +27,7 @@ fn main() {
     time::start_clock();
 
     const QUERY_COUNT: usize = 100;
+    // FIXME: 最後に4.7に直す
     const CONSTRUCT_TIME_LIMIT: f64 = 2.8;
     // const TIME_LIMIT: f64 = 4.8;
 
