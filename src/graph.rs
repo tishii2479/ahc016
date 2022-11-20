@@ -110,7 +110,6 @@ impl Graph {
 }
 
 pub fn calc_simulated_graph(graph: &mut Graph, m: usize, eps: f64, trial: usize) {
-    // TODO: square_edge_countsを使わないなら計算しない
     let mut square_edge_counts = vec![];
     let mut simulated_degrees = vec![0.; graph.n];
 
@@ -125,7 +124,7 @@ pub fn calc_simulated_graph(graph: &mut Graph, m: usize, eps: f64, trial: usize)
             simulated_degrees[i] += degrees[i];
         }
 
-        // m*epsが10以下ならcalc_simulated_squareはしない
+        // m*epsがUSE_SQUARE_LIMIT以下ならcalc_simulated_squareはしない
         if m as f64 * eps <= USE_SQUARE_LIMIT {
             continue;
         }
@@ -155,12 +154,13 @@ pub fn calc_simulated_square(graph: &Graph) -> Vec<f64> {
     const DIV: usize = 5;
     let mut edge_counts = vec![0.; DIV * DIV];
 
-    for i in 0..5 {
-        for j in 0..5 {
-            let x = graph.n / 5 * i;
-            let y = graph.n / 5 * j;
-            let w = graph.n / 5;
-            let h = graph.n / 5;
+    for i in 0..DIV {
+        for j in 0..DIV {
+            // eprintln!("{}, {}", i, j);
+            let x = graph.n * i / DIV;
+            let y = graph.n * j / DIV;
+            let w = graph.n / DIV;
+            let h = graph.n / DIV;
             let mut edge_count = 0.;
             for i in y..(y + h) {
                 for j in x..(x + w) {

@@ -14,6 +14,11 @@ def execute_case(seed):
 
     with open(input_file_path, "r") as f:
         M, eps = f.readline().split()
+        M = int(M)
+        eps = float(eps)
+
+    if M % 2 == 0 and round(eps * 100) % 2 == 0:
+        return 0, 0, M, eps, 0
 
     cmd = f"{tester_path} {solver_cmd} < {input_file_path} > {output_file_path}"
     proc = subprocess.run(cmd, stderr=subprocess.PIPE, timeout=TL, shell=True)
@@ -42,8 +47,9 @@ def main():
         for seed, score, M, eps, err in pool.imap_unordered(execute_case, range(CASE)):
             eps = float(eps)
             M = int(M)
-            if M % 2 == 0 or round(eps * 100) % 2 == 0:
+            if M % 2 == 0 and round(eps * 100) % 2 == 0:
                 continue
+
             err = int(err)
             count += 1
 
@@ -68,10 +74,10 @@ def main():
 
     print("=" * 100)
     scores.sort()
-    ave = total / CASE
+    ave = total / count
     print(f"ave: {ave}")
 
-    print(f"err ave: {err_count / CASE}")
+    print(f"err ave: {err_count / count}")
 
     M_div = list(range(10, 101, 10))
     eps_div = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]

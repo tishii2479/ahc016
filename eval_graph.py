@@ -25,19 +25,16 @@ def eval_graph(params):
 def main():
     subprocess.run("cargo build --release", shell=True)
 
-    with open("data/greedy_n_map.txt", "r") as f:
-        d = ast.literal_eval(
-            f.readline().replace("(", '"').replace(")", '"').replace(" ", "")
-        )
+    with open("data/rs_n_map.txt", "r") as f:
+        d = ast.literal_eval(f.readline())
 
     params = []
-    for m in range(10, 101, 2):
-        for e in range(0, 41, 2):
-            if e % 10 == 0:
-                best_n = d[f"{m},{e / 100:.1f}"]
-            else:
-                best_n = d[f"{m},{e / 100:.2f}"]
-            for n in range(min(101, best_n + 1), min(101, best_n + 6)):
+    for e in range(0, 6):
+        for m in range(10, 101):
+            if m % 2 == 0 and e % 2 == 0:
+                continue
+            best_n = d[m - 10][e]
+            for n in range(max(4, best_n - 2), min(101, best_n + 4)):
                 params.append((m, e / 100, n))
 
     n_map = {}
@@ -47,7 +44,7 @@ def main():
             n_map[(m, eps, n)] = score
 
     print(n_map)
-    with open("data/n_map.txt", "w") as f:
+    with open("data/odd_n_map.txt", "w") as f:
         f.write(str(n_map))
 
 
