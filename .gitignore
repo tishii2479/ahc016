@@ -1,7 +1,7 @@
 /target
 .vscode/
 tools/
-notebooks/
 *.out
+.ipynb_checkpoints/
 tmp/
 data/
