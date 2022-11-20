@@ -17,8 +17,8 @@ def execute_case(seed):
         M = int(M)
         eps = float(eps)
 
-    if M % 2 == 0 and round(eps * 100) % 2 == 0:
-        return 0, 0, M, eps, 0
+    # if M % 2 == 0 and round(eps * 100) % 2 == 0:
+    #     return 0, 0, M, eps, 0
 
     cmd = f"{tester_path} {solver_cmd} < {input_file_path} > {output_file_path}"
     proc = subprocess.run(cmd, stderr=subprocess.PIPE, timeout=TL, shell=True)
@@ -47,8 +47,8 @@ def main():
         for seed, score, M, eps, err in pool.imap_unordered(execute_case, range(CASE)):
             eps = float(eps)
             M = int(M)
-            if M % 2 == 0 and round(eps * 100) % 2 == 0:
-                continue
+            # if M % 2 == 0 and round(eps * 100) % 2 == 0:
+            #     continue
 
             err = int(err)
             count += 1

@@ -29,7 +29,7 @@ def main():
         d = ast.literal_eval(f.readline())
 
     params = []
-    for e in range(0, 6):
+    for e in range(1, 6):
         for m in range(10, 101):
             if m % 2 == 0 and e % 2 == 0:
                 continue
